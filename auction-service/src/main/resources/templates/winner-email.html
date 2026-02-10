@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .button {
+            background-color: #3357FF;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body style="font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+<div class="container" style="background-color: #ffffff;">
+    <h1 style="color: #3357FF; margin-bottom: 20px;">🏆 You've Won the Auction!</h1>
+    <p>Hi <strong><span th:text="${winnerName}"></span></strong>,</p>
+    <p>Congratulations! Your bid was successful for the following item:</p>
+
+    <div style="background-color: #f8faff; padding: 20px; border-radius: 10px; border-left: 5px solid #3357FF; margin: 25px 0;">
+        <p style="margin: 5px 0;"><strong>Item:</strong> <span th:text="${productName}">Product Name</span></p>
+        <p style="margin: 5px 0;"><strong>Closing Price:</strong> ₹<span th:text="${finalPrice}">0.00</span></p>
+        <p style="margin: 5px 0;"><strong>Seller:</strong> <span th:text="${sellerName}">Seller Name</span></p>
+    </div>
+
+    <p>To finalize the purchase and arrange delivery, please complete your payment. Remember, you have <strong>3
+        attempts</strong> to finish the transaction before the order is automatically canceled.</p>
+
+    <a th:href="${paymentLink}" class="button">Pay Now & Secure Item</a>
+
+    <p style="font-size: 13px; color: #777; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+        Thank you for using BidStream. If you have any questions, contact our 24/7 support team.
+    </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bidstream-blue: #3357FF; /* Primary Action Color */
+  --color-bidstream-dark: #0F172A; /* Deep Slate for text/backgrounds */
+  --color-bidstream-accent: #FF5733; /* Highlights/Warnings */
+  --color-bidstream-bg: #F8FAFC;   /* Light gray background */
+  --color-bidstream-card: #FFFFFF; /* Pure white for cards */
+}
+
+/* Global Styles */
+html, body {
+  height: 100%;
+  background-color: var(--color-bidstream-bg);
+  color: var(--color-bidstream-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  scroll-behavior: smooth;
+}
+
+#root {
+  height: 100%;
+}

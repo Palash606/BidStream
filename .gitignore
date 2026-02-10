@@ -1,0 +1,43 @@
+# --- Build Artifacts ---
+target/
+build/
+bin/
+out/
+
+# --- React & Node ---
+**/node_modules/
+**/dist/
+**/build/
+.eslintcache
+npm-debug.log*
+
+# --- Environment & Keys ---
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+
+# --- IDE Settings (IntelliJ, VS Code, STS) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+.springBeans
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Maven Wrapper ---
+.mvn/
+!**/src/main/**/target/
+!**/src/test/**/target/

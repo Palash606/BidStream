@@ -1,0 +1,19 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    # Essential for Standalone Mode:
+    register-with-eureka: false # Don't register with self
+    fetch-registry: false       # Don't try to fetch registry from peers
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    # Optional: Disables the "Emergency Mode" warning in the UI for local testing
+    enable-self-preservation: false
