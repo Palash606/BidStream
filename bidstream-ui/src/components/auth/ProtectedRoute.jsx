@@ -1,10 +1,12 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../stores';
 
+/**
+ * ProtectedRoute - Redirects to login if user is not authenticated
+ * Uses Zustand store instead of Context API
+ */
 const ProtectedRoute = ({ children }) => {
-    const { user, loading } = useAuth();
-
-    if (loading) return null; // Or a splash screen
+    const user = useAuthStore((state) => state.user);
 
     if (!user) {
         // Redirect them to login if not authenticated

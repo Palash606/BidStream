@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores';
 
 const AuthCallbackPage = () => {
-    const { user } = useAuth();
+    const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
     const location = useLocation();
 
