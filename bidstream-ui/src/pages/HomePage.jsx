@@ -1,175 +1,250 @@
-import React from 'react';
-import {useNavigate, Link} from 'react-router-dom'; // ADDED: Link import
-import {useAuth} from '../context/AuthContext';
-import DashboardNavbar from '../components/dashboard/DashboardNavbar';
-import CategoryRibbon from '../components/dashboard/CategoryRibbon';
-import HeroCarousel from '../components/dashboard/HeroCarousel';
-import BidBuddy from '../components/dashboard/BidBuddy';
-import {LiveTimer} from '../components/dashboard/LiveTimer';
-import {Globe, Mail, Phone} from 'lucide-react';
-import OnboardingModal from '../components/onboarding/OnboardingModal'; // Ensure path is correct
+import React, { useState } from 'react';
+import { useAuthStore } from '../stores';
+import PublicNavbar from '../components/navbar/PublicNavbar';
+import PulseCarousel from '../components/homepage/PulseCarousel';
+import CategoryGrid from '../components/homepage/CategoryGrid';
+import ProductRow from '../components/homepage/ProductRow';
+import ContactSection from '../components/homepage/ContactSection';
+import PublicFooter from '../components/footer/PublicFooter';
+import OnboardingModal from '../components/onboarding/OnboardingModal';
+import BidBuddyModal from '../components/ai/BidBuddyModal';
+import { useNavigate } from 'react-router-dom';
+import { Flame, Clock, Gem, Sparkles, Car, Watch, MessageCircle } from 'lucide-react';
+import AnimatedFire from '../components/animations/AnimatedFire';
+import AnimatedClock from '../components/animations/AnimatedClock';
+import AnimatedDiamond from '../components/animations/AnimatedDiamond';
+import AnimatedSparkle from '../components/animations/AnimatedSparkle';
+import AnimatedCar from '../components/animations/AnimatedCar';
+import AnimatedWatch from '../components/animations/AnimatedWatch';
 
+/**
+ * HomePage - Premium public homepage with world-class aesthetic
+ * Features: BidBuddy AI modal, theme system, balanced spacing
+ */
 const HomePage = () => {
-    const {user} = useAuth();
+    const user = useAuthStore((state) => state.user);
+    const isOnboardingPending = useAuthStore((state) => state.isOnboardingPending());
+    const [isBidBuddyOpen, setIsBidBuddyOpen] = useState(false);
     const navigate = useNavigate();
 
-    // Check if the user is authenticated but hasn't picked a role yet
-    const isPending = user?.role === 'ROLE_SELECTION_PENDING';
+    // Mock product data - Realistic Indian Market Items
+    const trendingProducts = [
+        {
+            id: 1,
+            title: '3BHK Luxury Apartment - Bandra West, Mumbai',
+            seller: 'PremiumRealty',
+            currentBid: '₹4,75,00,000',
+            endTime: new Date(Date.now() + 172800000).toISOString(), // 2 days
+            image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop'
+        },
+        {
+            id: 2,
+            title: 'Royal Enfield Bullet 350 Classic (1985)',
+            seller: 'VintageRides',
+            currentBid: '₹2,85,000',
+            endTime: new Date(Date.now() + 86400000).toISOString(), // 1 day
+            image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'
+        },
+        {
+            id: 3,
+            title: 'Canon EOS R5 Mirrorless Camera Kit',
+            seller: 'TechDeals',
+            currentBid: '₹2,15,000',
+            endTime: new Date(Date.now() + 43200000).toISOString(), // 12 hours
+            image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&h=600&fit=crop'
+        },
+        {
+            id: 4,
+            title: 'Tanishq 22K Gold Necklace Set (75g)',
+            seller: 'LuxuryJewels',
+            currentBid: '₹4,25,000',
+            endTime: new Date(Date.now() + 259200000).toISOString(), // 3 days
+            image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=600&fit=crop'
+        },
+        {
+            id: 5,
+            title: 'Rolex Submariner Date (2021 Model)',
+            seller: 'TimelessWatches',
+            currentBid: '₹12,50,000',
+            endTime: new Date(Date.now() + 604800000).toISOString(), // 1 week
+            image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&h=600&fit=crop'
+        }
+    ];
+
+    const endingSoonProducts = [
+        {
+            id: 6,
+            title: 'iPhone 15 Pro Max 512GB (Natural Titanium)',
+            seller: 'ApplePremium',
+            currentBid: '₹1,45,000',
+            endTime: new Date(Date.now() + 1800000).toISOString(), // 30 mins
+            image: 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=800&h=600&fit=crop'
+        },
+        {
+            id: 7,
+            title: 'Harley-Davidson Street 750 (2019)',
+            seller: 'BikeCollective',
+            currentBid: '₹3,85,000',
+            endTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour
+            image: 'https://images.unsplash.com/photo-1558981000-f294a6ed32b2?w=800&h=600&fit=crop'
+        },
+        {
+            id: 8,
+            title: 'MacBook Pro M3 Max 16" (1TB)',
+            seller: 'TechHub',
+            currentBid: '₹2,95,000',
+            endTime: new Date(Date.now() + 7200000).toISOString(), // 2 hours
+            image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=600&fit=crop'
+        },
+        {
+            id: 9,
+            title: 'Antique Tanjore Painting (18th Century)',
+            seller: 'HeritageArts',
+            currentBid: '₹8,50,000',
+            endTime: new Date(Date.now() + 10800000).toISOString(), // 3 hours
+            image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&h=600&fit=crop'
+        }
+    ];
+
+    const highValueProducts = [
+        {
+            id: 10,
+            title: '3BHK Penthouse Mumbai',
+            seller: 'PrimeRealty',
+            currentBid: '₹8,50,00,000',
+            timeRemaining: 259200,
+            image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop'
+        },
+        {
+            id: 11,
+            title: 'Patek Philippe Nautilus',
+            seller: 'EliteTimepieces',
+            currentBid: '₹95,00,000',
+            timeRemaining: 43200,
+            image: 'https://images.unsplash.com/photo-1622434641406-a158123450f9?w=800&h=600&fit=crop'
+        },
+        {
+            id: 12,
+            title: 'Ducati Panigale V4 S',
+            seller: 'SuperbikeDeals',
+            currentBid: '₹28,50,000',
+            timeRemaining: 14400,
+            image: 'https://images.unsplash.com/photo-1558981000-f294a6ed32b2?w=800&h=600&fit=crop'
+        }
+    ];
+
+    const newListingsProducts = [
+        {
+            id: 13,
+            title: 'Herman Miller Aeron Chair',
+            seller: 'OfficeEssentials',
+            currentBid: '₹85,000',
+            timeRemaining: 172800,
+            image: 'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800&h=600&fit=crop'
+        },
+        {
+            id: 14,
+            title: 'Rare Pokémon Card Collection',
+            seller: 'CollectorHub',
+            currentBid: '₹5,50,000',
+            timeRemaining: 86400,
+            image: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?w=800&h=600&fit=crop'
+        }
+    ];
 
     const handleOnboardingComplete = () => {
-        // Once the final slide is clicked, move to the actual dashboard
         navigate('/dashboard');
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col font-sans transition-colors duration-500">
-            {/* Main content wrapper that blurs when onboarding is active */}
-            <div
-                className={`flex flex-col min-h-screen transition-all duration-700 ${isPending ? 'blur-xl grayscale pointer-events-none scale-95' : 'blur-0'}`}>
-                <header className="sticky top-0 z-[60]">
-                    {/* Top Bar */}
-                    <div
-                        className="bg-gray-50 dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 hidden sm:block">
-                        <div
-                            className="max-w-[1400px] mx-auto px-6 py-2 flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                            <div className="flex gap-8">
-                                <span
-                                    className="hover:text-blue-600 cursor-pointer transition-colors">Help & Contact</span>
-                                <Link to="/dashboard" className="hover:text-blue-600 cursor-pointer transition-colors">Start
-                                    Selling</Link>
-                            </div>
-                            <div className="flex gap-8">
-                                <span>Ship to: <span
-                                    className="text-slate-900 dark:text-white">India | ₹ INR</span></span>
-                            </div>
-                        </div>
-                    </div>
-                    <DashboardNavbar/>
-                    <CategoryRibbon/>
-                </header>
+        <div className="min-h-screen bg-slate-950">
+            {/* Public Navigation */}
+            <PublicNavbar />
 
-                <main className="flex-1">
-                    {/* Hero Section */}
-                    <section className="max-w-[1400px] mx-auto px-0 sm:px-6 pt-0 sm:pt-6">
-                        <HeroCarousel onOpenBot={() => {
-                        }}/>
-                    </section>
+            {/* Hero Carousel */}
+            <PulseCarousel onAIChatClick={() => setIsBidBuddyOpen(true)} />
 
-                    {/* Live Auctions Section */}
-                    <section className="max-w-[1400px] mx-auto px-6 py-24">
-                        <div className="flex items-center justify-between mb-16">
-                            <h2 className="text-5xl font-black tracking-tighter italic dark:text-white uppercase">LIVE
-                                NOW</h2>
-                            <div className="h-[2px] flex-1 bg-gray-100 dark:bg-slate-800 mx-10 hidden md:block"/>
-                            <button
-                                className="text-blue-600 font-black text-xs uppercase tracking-widest hover:underline cursor-pointer">
-                                View All Active Lots
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                            <AuctionCard
-                                title="Audemars Piguet Royal Oak"
-                                price="₹42,00,000"
-                                time={3600}
-                                img="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?q=80&w=800"
-                            />
-                            <AuctionCard
-                                title="1963 Corvette Sting Ray"
-                                price="₹1,15,00,000"
-                                time={120}
-                                img="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800"
-                            />
-                            <AuctionCard
-                                title="Rare Pokémon Illustrator Card"
-                                price="₹8,50,000"
-                                time={72000}
-                                img="https://images.unsplash.com/photo-1613771404721-1f92d799e49f?q=80&w=800"
-                            />
-                        </div>
-                    </section>
-                </main>
-
-                <BidBuddy/>
-
-                {/* Footer */}
-                <footer
-                    className="bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 pt-20 pb-12">
-                    <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
-                        <div className="col-span-1 md:col-span-2">
-                            <h3 className="text-2xl font-black mb-6 dark:text-white uppercase">BidStream.</h3>
-                            <p className="text-gray-400 font-bold text-sm max-w-sm leading-relaxed">
-                                Join the most secure global auction house. From fine art to rare tech, we deliver value
-                                at high velocity.
-                            </p>
-                        </div>
-                        <div>
-                            <h4 className="font-black text-[10px] uppercase text-gray-400 mb-6 tracking-widest">Support</h4>
-                            <ul className="space-y-4 text-sm font-black text-slate-900 dark:text-slate-200">
-                                <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600 transition-colors">
-                                    <Mail size={16}/> help@bidstream.com
-                                </li>
-                                <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600 transition-colors">
-                                    <Phone size={16}/> 1800-BID-NOW
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-black text-[10px] uppercase text-gray-400 mb-6 tracking-widest">Platform</h4>
-                            <ul className="space-y-4 text-sm font-black text-slate-900 dark:text-slate-200">
-                                <li className="cursor-pointer hover:text-blue-600 transition-colors">Terms &
-                                    Conditions
-                                </li>
-                                <li className="cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2">
-                                    <Globe size={16}/> Privacy Policy
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div
-                        className="max-w-[1400px] mx-auto px-6 border-t border-gray-200 dark:border-slate-800 pt-10 text-[10px] font-black text-gray-400 text-center tracking-[0.3em]">
-                        © 2026 BIDSTREAM AUCTION PLATFORM. WHERE VALUE MEETS VELOCITY.
-                    </div>
-                </footer>
+            {/* Shop by Category */}
+            <div className="mt-2 sm:mt-4 md:mt-6 lg:mt-8">
+                <CategoryGrid />
             </div>
 
-            {/* Modal Layer: Stays sharp while background blurs */}
-            <OnboardingModal
-                isOpen={isPending}
-                userEmail={user?.email}
-                onClose={handleOnboardingComplete}
+            {/* Product Rows with Balanced Spacing */}
+            <ProductRow
+                title="Trending Now"
+                products={trendingProducts}
+                icon={Flame}
+                animatedIcon={AnimatedFire}
             />
+
+            <ProductRow
+                title="Ending Soon"
+                products={endingSoonProducts}
+                icon={Clock}
+                animatedIcon={AnimatedClock}
+            />
+
+            <ProductRow
+                title="High-Value Auctions"
+                products={highValueProducts}
+                icon={Gem}
+                animatedIcon={AnimatedDiamond}
+            />
+
+            <ProductRow
+                title="New Listings"
+                products={newListingsProducts}
+                icon={Sparkles}
+                animatedIcon={AnimatedSparkle}
+            />
+
+            <ProductRow
+                title="Luxury Cars"
+                products={trendingProducts.filter((_, idx) => idx % 2 === 0)}
+                icon={Car}
+                animatedIcon={AnimatedCar}
+            />
+
+            <ProductRow
+                title="Timepieces"
+                products={trendingProducts.filter((_, idx) => idx % 2 === 1)}
+                icon={Watch}
+                animatedIcon={AnimatedWatch}
+            />
+
+            {/* Separator Line */}
+            <div className="border-t border-slate-800 my-4 max-w-[1400px] mx-auto w-full opacity-50" />
+
+            {/* Contact Us Section - Theme Aware */}
+            <ContactSection />
+
+            {/* Footer */}
+            <PublicFooter />
+
+            {/* Onboarding Modal - Only for authenticated users with pending role */}
+            {user && isOnboardingPending && (
+                <OnboardingModal
+                    isOpen={true}
+                    onClose={handleOnboardingComplete}
+                />
+            )}
+
+            {/* BidBuddy AI Modal */}
+            <BidBuddyModal
+                isOpen={isBidBuddyOpen}
+                onClose={() => setIsBidBuddyOpen(false)}
+            />
+
+            {/* Fixed Pulsing AI Chat Button - Bottom Right */}
+            <button
+                onClick={() => setIsBidBuddyOpen(true)}
+                className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 rounded-full shadow-2xl flex items-center justify-center z-50 transition-all hover:scale-110 animate-pulse-slow"
+                aria-label="Open BidBuddy AI Chat"
+            >
+                <MessageCircle size={28} className="text-white" />
+            </button>
         </div>
     );
 };
-
-const AuctionCard = ({title, price, time, img}) => (
-    <div className="group cursor-pointer">
-        <div
-            className="relative h-80 rounded-[2.5rem] overflow-hidden mb-8 shadow-xl transition-all group-hover:-translate-y-2 group-hover:shadow-2xl">
-            <img src={img}
-                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                 alt={title}/>
-            <div
-                className="absolute top-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/20">
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"/>
-                <span className="text-[10px] font-black uppercase text-slate-900 dark:text-white">Live</span>
-            </div>
-        </div>
-        <div className="px-4">
-            <h3 className="text-2xl font-black mb-4 dark:text-white group-hover:text-blue-600 transition-colors uppercase tracking-tighter italic truncate">{title}</h3>
-            <div
-                className="flex justify-between items-center bg-gray-50 dark:bg-slate-900 p-6 rounded-[2rem] border border-transparent dark:border-slate-800">
-                <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Current Bid</p>
-                    <p className="text-2xl font-black text-slate-900 dark:text-white">{price}</p>
-                </div>
-                <div className="text-right">
-                    <p className="text-[10px] font-black text-red-400 uppercase mb-1">Ends In</p>
-                    <LiveTimer initialSeconds={time}/>
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 export default HomePage;

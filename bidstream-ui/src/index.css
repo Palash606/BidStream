@@ -1,22 +1,300 @@
+/* Import Premium Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 
-@theme {
-  --color-bidstream-blue: #3357FF; /* Primary Action Color */
-  --color-bidstream-dark: #0F172A; /* Deep Slate for text/backgrounds */
-  --color-bidstream-accent: #FF5733; /* Highlights/Warnings */
-  --color-bidstream-bg: #F8FAFC;   /* Light gray background */
-  --color-bidstream-card: #FFFFFF; /* Pure white for cards */
+/**
+ * HARD-OVERRIDE THEME ENGINE
+ * GeeksforGeeks-style .dark class with instant UI transformation
+ * Identity A (Light): Clean white backgrounds, professional
+ * Identity B (Dark): Deep black backgrounds, immersive
+ */
+
+/**
+ * FORCED DARK MODE THEME
+ * Permanent dark theme with deep blacks and slate colors
+ */
+
+/* ===== PERMANENT DARK MODE ===== */
+:root {
+  /* ===== Page Foundation (DARK: Deep Black) ===== */
+  --page-bg: #0a0a0a;
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+
+  /* ===== Card & Container Backgrounds ===== */
+  --card-bg: #1e293b;
+  --card-hover-bg: #334155;
+  --input-bg: #1e293b;
+  --modal-bg: #0f172a;
+
+  /* ===== Text Colors ===== */
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0a0a0a;
+
+  /* ===== Borders ===== */
+  --border-default: #334155;
+  --border-light: #1e293b;
+  --border-strong: #475569;
+  --border-focus: #6366f1;
+
+  /* ===== Interactive Elements (Blue-Purple Gradient) ===== */
+  --button-primary-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --button-secondary-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --button-accent-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --button-hover-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  --link-color: #60a5fa;
+  --link-hover: #93c5fd;
+
+  /* ===== Glassmorphism (Enhanced for Dark) ===== */
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-card-bg: rgba(30, 41, 59, 0.8);
+  --glass-card-border: rgba(51, 65, 85, 0.5);
+  --glass-backdrop-blur: 16px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* ===== Navigation ===== */
+  --nav-bg: #0f172a;
+  --nav-border: #1e293b;
+  --nav-hover-bg: #1e293b;
+  --nav-active-bg: #334155;
+
+  /* ===== Specific Sections ===== */
+  --contact-bg: #0a0a0a;
+  --footer-bg: linear-gradient(135deg, #0a0a0a 0%, #1e1b4b 20%, #0a0a0a 100%);
+  --hero-overlay: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+
+  /* ===== Shadows ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
+  --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.5);
+
+  /* ===== Accent Colors ===== */
+  --accent-primary: #6366f1;
+  --accent-secondary: #a855f7;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+
+  /* ===== Spacing ===== */
+  --space-section: 4rem;
 }
 
-/* Global Styles */
-html, body {
-  height: 100%;
-  background-color: var(--color-bidstream-bg);
-  color: var(--color-bidstream-dark);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  scroll-behavior: smooth;
+/* Force dark backgrounds globally */
+body {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
 }
 
 #root {
-  height: 100%;
+  background-color: #0a0a0a !important;
+}
+
+/* ===== IDENTITY B: DARK MODE (Immersive Slate/Indigo) ===== */
+[data-theme="dark"] {
+  /* ===== Page Foundation ===== */
+  --page-bg: #0f172a;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #1a1a1a;
+
+  /* ===== Card & Container Backgrounds ===== */
+  --card-bg: #0f0f0f;
+  --card-hover-bg: #1a1a1a;
+  --input-bg: #1a1a1a;
+  --modal-bg: #0f0f0f;
+
+  /* ===== Text Colors ===== */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0f172a;
+
+  /* ===== Borders ===== */
+  --border-default: #2a2a2a;
+  --border-light: #1a1a1a;
+  --border-strong: #3a3a3a;
+  --border-focus: #6366f1;
+
+  /* ===== Interactive Elements ===== */
+  --button-primary-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --button-secondary-bg: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  --button-accent-bg: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --button-hover-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  --link-color: #60a5fa;
+  --link-hover: #93c5fd;
+
+  /* ===== Glassmorphism (Enhanced for Dark) ===== */
+  --glass-bg: rgba(15, 15, 15, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-card-bg: rgba(20, 20, 20, 0.8);
+  --glass-card-border: rgba(255, 255, 255, 0.15);
+  --glass-backdrop-blur: 16px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* ===== Navigation ===== */
+  --nav-bg: #000000;
+  --nav-border: #1a1a1a;
+  --nav-hover-bg: #111111;
+  --nav-active-bg: #1a1a1a;
+
+  /* ===== Specific Sections ===== */
+  --contact-bg: linear-gradient(135deg, #0a0a0a 0%, #000000 100%);
+  --footer-bg: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+  --hero-overlay: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+
+  /* ===== Shadows ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.4);
+  --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.6);
+
+  /* ===== Accent Colors ===== */
+  --accent-primary: #6366f1;
+  --accent-secondary: #a855f7;
+  --accent-success: #34d399;
+  --accent-warning: #fbbf24;
+  --accent-error: #f87171;
+}
+
+/* ===== BUTTERY-SMOOTH GLOBAL TRANSITIONS ===== */
+html,
+body {
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  /* Apply Inter as default font family */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* transition-colors with 300ms for smooth fade effect */
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}
+
+* {
+  /* All elements fade smoothly when theme switches */
+  transition: background-color 300ms ease-in-out,
+    color 300ms ease-in-out,
+    border-color 300ms ease-in-out,
+    box-shadow 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+/* Disable transitions for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Custom Utilities */
+@utility glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+@utility glass-card-dark {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+@utility gradient-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility gradient-text-primary {
+  background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility gradient-text-secondary {
+  background-image: linear-gradient(to right, #06b6d4, #3b82f6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Custom Animations */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@utility animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@utility animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom Theme Extensions */
+@theme {
+  --color-bidstream-blue: #3357FF;
+  --color-bidstream-dark: #2c3e50;
+  --color-bidstream-accent: #FF5733;
 }

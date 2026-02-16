@@ -2,14 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import {AuthProvider} from './context/AuthContext'
-import {Toaster} from 'react-hot-toast';
+
+// Force dark mode permanently
+document.documentElement.classList.add('dark');
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <AuthProvider>
-            <App/>
-            <Toaster position="top-right" reverseOrder={false}/>
-        </AuthProvider>
+        <App />
     </React.StrictMode>,
 )
