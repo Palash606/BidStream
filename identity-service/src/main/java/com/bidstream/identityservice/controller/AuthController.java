@@ -59,7 +59,8 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
         String email = resetTokenCache.get(token);
-        if (email == null) return ResponseEntity.badRequest().body("Invalid or expired token.");
+        if (email == null)
+            return ResponseEntity.badRequest().body("Invalid or expired token.");
 
         User user = userRepository.findByEmail(email).orElseThrow();
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -83,8 +84,7 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of(
                     "accessToken", newAccessToken,
-                    "refreshToken", newRefreshToken
-            ));
+                    "refreshToken", newRefreshToken));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
     }
@@ -96,8 +96,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "token", jwtService.generateToken(user),
                     "refreshToken", jwtService.generateRefreshToken(user),
-                    "role", user.getRole()
-            ));
+                    "role", user.getRole()));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP.");
     }
@@ -128,6 +127,20 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/initiate-registration")
+    public ResponseEntity<?> initiateRegistration(
+            @RequestParam String email,
+            @Valid @RequestBody RegistrationRequest request) {
+        try {
+            registrationService.initiateRegistration(email, request);
+            return ResponseEntity.ok("OTP sent to " + email);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred during validation.");
         }
     }
 

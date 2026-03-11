@@ -54,6 +54,36 @@ public class RegistrationService {
     }
 
     @Transactional
+    public void initiateRegistration(String email, RegistrationRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already registered. Please log in.");
+        }
+        if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
+            throw new IllegalArgumentException("Phone number is already associated with an account.");
+        }
+        if (userRepository.existsByPanCard(request.panCard())) {
+            throw new IllegalArgumentException("PAN Card is already associated with an account.");
+        }
+
+        String passwordLower = request.password().toLowerCase();
+        String fNameLower = request.firstName().toLowerCase();
+        String lNameLower = request.lastName().toLowerCase();
+
+        if (passwordLower.contains(fNameLower) || passwordLower.contains(lNameLower)) {
+            throw new IllegalArgumentException("Password cannot contain your first or last name.");
+        }
+
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match!");
+        }
+
+        otpService.sendOtp(email);
+    }
+
+    @Transactional
     public void registerNewUser(String email, String otp, RegistrationRequest request) {
 
         String passwordLower = request.password().toLowerCase();
@@ -71,7 +101,8 @@ public class RegistrationService {
         User existingUser = userRepository.findByEmail(email).orElse(null);
         if (existingUser != null && existingUser.getLockoutUntil() != null
                 && existingUser.getLockoutUntil().isAfter(LocalDateTime.now())) {
-            throw new IllegalStateException("Account locked due to multiple failed attempts. Please try again after 12 hours.");
+            throw new IllegalStateException(
+                    "Account locked due to multiple failed attempts. Please try again after 12 hours.");
         }
 
         if (!otpService.validateOtp(email, otp)) {
@@ -92,7 +123,8 @@ public class RegistrationService {
                 .panCard(request.panCard())
                 .countryCode(request.countryCode())
                 .phoneNumber(request.phoneNumber())
-                .address(new Address(request.street(), request.city(), request.state(), request.zipCode(), request.country()))
+                .address(new Address(request.street(), request.city(), request.state(), request.zipCode(),
+                        request.country()))
                 .role(assignedRole)
                 .lastActiveRole(assignedRole)
                 .isVerified(true)
@@ -113,7 +145,8 @@ public class RegistrationService {
         if (attempts >= 3) {
             user.setLockoutUntil(LocalDateTime.now().plusHours(12));
             userRepository.save(user);
-            throw new IllegalStateException("3 failed attempts. Account locked for 12 hours. Please try again after 12 hours");
+            throw new IllegalStateException(
+                    "3 failed attempts. Account locked for 12 hours. Please try again after 12 hours");
         }
         userRepository.save(user);
     }

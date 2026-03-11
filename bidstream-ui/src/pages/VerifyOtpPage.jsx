@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authService } from '../api/authService';
@@ -11,19 +11,11 @@ const VerifyOtpPage = () => {
     const navigate = useNavigate();
     const login = useAuthStore((state) => state.login);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
-    const [timer, setTimer] = useState(30);
     const inputs = useRef([]);
 
     const { registrationData, mode: stateMode, email: stateEmail } = location.state || {};
     const targetEmail = stateEmail || registrationData?.email;
     const currentMode = stateMode;
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
 
     const handleChange = (e, index) => {
         const val = e.target.value;
@@ -66,9 +58,9 @@ const VerifyOtpPage = () => {
             const userRole = res.data.role;
 
             if (userRole === 'ROLE_SELECTION_PENDING') {
-                // New user: Go to home page for onboarding.
+                // New user: Go to onboarding flow
                 // { replace: true } prevents user from going back to the OTP page.
-                navigate('/', { replace: true });
+                navigate('/onboarding', { replace: true });
             } else {
                 // Existing user: Go to the dashboard.
                 navigate('/dashboard', { replace: true });

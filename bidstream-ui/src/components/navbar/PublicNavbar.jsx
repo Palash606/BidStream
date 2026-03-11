@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Search,
@@ -7,15 +7,15 @@ import {
     ChevronDown,
     Bell,
     HelpCircle,
-    Moon,
-    Sun,
+    LayoutDashboard,
     Settings,
     Mail,
     Shield,
-    Store
+    Store,
+    LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore, useUIStore } from '../../stores';
+import { useAuthStore } from '../../stores';
 
 /**
  * PublicNavbar - Fully responsive desktop layout on all screen sizes
@@ -24,7 +24,7 @@ import { useAuthStore, useUIStore } from '../../stores';
 const PublicNavbar = () => {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
-    const { isDark, toggleTheme } = useUIStore();
+    const logout = useAuthStore((state) => state.logout);
 
     const [selectedCategory, setSelectedCategory] = useState('All Categories');
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -32,6 +32,17 @@ const PublicNavbar = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const profileRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setIsProfileOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const categories = [
         'All Categories',
@@ -63,13 +74,6 @@ const PublicNavbar = () => {
         'Phones & Accessories'
     ];
 
-    const profileMenuItems = [
-        { label: 'Settings', icon: Settings, path: '/settings' },
-        { label: 'Contact Us', icon: Mail, path: '/contact' },
-        { label: 'Help Center', icon: HelpCircle, path: '/help' },
-        { label: 'Safety', icon: Shield, path: '/safety' }
-    ];
-
     // Login lock system - redirect to login if not authenticated
     const handleProtectedAction = (action) => {
         if (!user) {
@@ -86,12 +90,6 @@ const PublicNavbar = () => {
                 navigate(`/search?q=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(selectedCategory)}`);
             }
         });
-    };
-
-    const handleCategoryClick = (category) => {
-        // Convert category name to slug format (lowercase, replace spaces & ampersands with hyphens)
-        const slug = category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-');
-        navigate(`/products/categories/${slug}`);
     };
 
     return (
@@ -343,14 +341,62 @@ const PublicNavbar = () => {
                                     <span className="hidden md:inline">Products</span>
                                 </button>
 
-                                {/* Profile Icon - Responsive */}
-                                <button
-                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                    className="p-1 sm:p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
-                                    aria-label="Profile Menu"
-                                >
-                                    <User size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400" />
-                                </button>
+                                {/* Profile Dropdown */}
+                                <div className="relative" ref={profileRef}>
+                                    <button
+                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                        className="p-1 sm:p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+                                        aria-label="Profile Menu"
+                                    >
+                                        <User size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400" />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isProfileOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-2 z-50 overflow-hidden"
+                                            >
+                                                <div className="p-4 border-b border-slate-50 dark:border-slate-800 mb-2">
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1 italic">
+                                                        Account Center
+                                                    </p>
+                                                    <p className="text-sm font-black text-slate-900 dark:text-white truncate">
+                                                        {user?.email || "User"}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Link to="/profile" onClick={() => setIsProfileOpen(false)}
+                                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+                                                        <User size={18} className="group-hover:text-blue-600 transition-colors" />
+                                                        <span>My Profile</span>
+                                                    </Link>
+                                                    <Link to="/watchlist" onClick={() => setIsProfileOpen(false)}
+                                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+                                                        <Heart size={18} className="group-hover:text-blue-600 transition-colors" />
+                                                        <span>Watchlist</span>
+                                                    </Link>
+                                                    <Link to="/settings" onClick={() => setIsProfileOpen(false)}
+                                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+                                                        <Settings size={18} className="group-hover:text-blue-600 transition-colors" />
+                                                        <span>Settings</span>
+                                                    </Link>
+                                                    <Link to="/help" onClick={() => setIsProfileOpen(false)}
+                                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+                                                        <HelpCircle size={18} className="group-hover:text-blue-600 transition-colors" />
+                                                        <span>Help & Support</span>
+                                                    </Link>
+                                                </div>
+                                                <button onClick={() => { logout(); setIsProfileOpen(false); }}
+                                                    className="w-full text-left p-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all flex items-center gap-3 mt-4 cursor-pointer">
+                                                    <LogOut size={18} /> Logout
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </>
                         )}
                     </div>

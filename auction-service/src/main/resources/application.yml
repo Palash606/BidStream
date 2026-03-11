@@ -48,6 +48,10 @@ spring:
     suffix: .html
 
 eureka:
+  instance:
+    hostname: localhost
+    preferIpAddress: true
+    ipAddress: 127.0.0.1
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/

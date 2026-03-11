@@ -12,6 +12,10 @@ export const authService = {
         return await api.post(`/auth/register?email=${email}&otp=${otp}`, registrationData);
     },
 
+    initiateRegistration: async (email, registrationData) => {
+        return await api.post(`/auth/initiate-registration?email=${email}`, registrationData);
+    },
+
     // 3. Login
     login: async (email, password) => {
         // Triggers the 2FA flow in your RegistrationService
