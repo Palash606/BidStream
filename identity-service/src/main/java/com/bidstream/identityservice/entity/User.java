@@ -68,8 +68,11 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Return the role with the "ROLE_" prefix
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
+        String roleName = this.role.name();
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override

@@ -45,29 +45,31 @@ public class SecurityConfig {
                                 "/auth/verify-final",
                                 "/auth/countries",
                                 "/auth/verify-2fa",
+                                "/auth/initiate-registration", // Permit pre-registration checks
                                 "/auth/check-username", // Permit username availability check
-                                "/auth/switch-role",     // Permit onboarding role assignment
-                                "/auth/forgot-password"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
+                                "/auth/switch-role", // Permit onboarding role assignment
+                                "/auth/forgot-password")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        // .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
 
         return http.build();
     }
 
-//    @Bean
-//    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(List.of("http://localhost:5173")); // Gateway passes original origin
-//        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//        config.setAllowedHeaders(List.of("*"));
-//        config.setAllowCredentials(true);
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//        return source;
-//    }
+    // @Bean
+    // public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    // CorsConfiguration config = new CorsConfiguration();
+    // config.setAllowedOrigins(List.of("http://localhost:5173")); // Gateway passes
+    // original origin
+    // config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    // config.setAllowedHeaders(List.of("*"));
+    // config.setAllowCredentials(true);
+    //
+    // UrlBasedCorsConfigurationSource source = new
+    // UrlBasedCorsConfigurationSource();
+    // source.registerCorsConfiguration("/**", config);
+    // return source;
+    // }
 }

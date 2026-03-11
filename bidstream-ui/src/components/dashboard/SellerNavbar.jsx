@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, PlusCircle, Wallet, Moon, Sun, ChevronDown, BarChart3, Package } from 'lucide-react';
+import { Search, Bell, PlusCircle, Wallet, Moon, Sun, ChevronDown, BarChart3, Package, LogOut, Settings, HelpCircle, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore, useUIStore, getProfileColor } from '../../stores';
+import { useAuthStore } from '../../stores';
 
 const SellerNavbar = () => {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
-    const isDark = useUIStore((state) => state.isDark);
-    const toggleTheme = useUIStore((state) => state.toggleTheme);
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const username = user?.email?.split('@')[0] || "palash2105";
     const initial = username.charAt(0).toUpperCase();
@@ -41,7 +50,7 @@ const SellerNavbar = () => {
                             className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
                     </button>
 
-                    <div className="relative">
+                    <div className="relative" ref={menuRef}>
                         <button onClick={() => setMenuOpen(!menuOpen)}
                             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black border-2 border-indigo-200 bg-indigo-600 shadow-md transition-all active:scale-90">{initial}</button>
                         <AnimatePresence>
@@ -53,16 +62,15 @@ const SellerNavbar = () => {
                                         Hub</p><p
                                             className="text-sm font-black text-slate-900 dark:text-white truncate">{user.email}</p>
                                     </div>
-                                    <button onClick={toggleTheme}
-                                        className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 font-bold dark:text-slate-300">
-                                        <div className="flex items-center gap-3">{isDark ?
-                                            <Sun size={18} className="text-yellow-500" /> :
-                                            <Moon size={18} className="text-indigo-600" />}<span>Appearance</span></div>
-                                        <span
-                                            className="text-[10px] font-black uppercase opacity-40">{isDark ? 'Dark' : 'Light'}</span>
-                                    </button>
+                                    <div className="space-y-1">
+                                        <NavMenuItem icon={<User size={18} />} label="My Profile" />
+                                        <NavMenuItem icon={<BarChart3 size={18} />} label="Seller Dashboard" />
+                                        <NavMenuItem icon={<Settings size={18} />} label="Settings" />
+                                        <NavMenuItem icon={<HelpCircle size={18} />} label="Help & Support" />
+                                    </div>
                                     <button onClick={logout}
-                                        className="w-full text-left p-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl flex items-center gap-3 mt-4">Logout
+                                        className="w-full text-left p-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all flex items-center gap-3 mt-4">
+                                        <LogOut size={18} /> Logout
                                     </button>
                                 </motion.div>
                             )}
@@ -73,4 +81,13 @@ const SellerNavbar = () => {
         </nav>
     );
 };
+
+const NavMenuItem = ({ icon, label }) => (
+    <button
+        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+        <span className="group-hover:text-indigo-600 transition-colors">{icon}</span>
+        <span>{label}</span>
+    </button>
+);
+
 export default SellerNavbar;

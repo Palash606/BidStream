@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Search, Bell, Moon, Sun, ChevronDown, Heart, HelpCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, Bell, Moon, Sun, ChevronDown, Heart, HelpCircle, LogOut, Settings, User, Gavel } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BidStreamLogo } from '../ui/Logo';
-import { useAuthStore, useUIStore, getProfileColor } from '../../stores';
+import { useAuthStore, getProfileColor } from '../../stores';
 
 const BidderNavbar = () => {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
-    const isDark = useUIStore((state) => state.isDark);
-    const toggleTheme = useUIStore((state) => state.toggleTheme);
-    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const username = user?.email?.split('@')[0] || "palash2105";
     const avatarColor = getProfileColor(username);
@@ -50,7 +58,7 @@ const BidderNavbar = () => {
                 <div className="flex items-center gap-6">
                     <button className="text-slate-400 dark:text-slate-500 hover:text-blue-600 relative cursor-pointer">
                         <Bell size={22} /></button>
-                    <div className="relative">
+                    <div className="relative" ref={menuRef}>
                         <button onClick={() => setMenuOpen(!menuOpen)}
                             className="flex items-center gap-2 cursor-pointer group">
                             <div
@@ -69,16 +77,16 @@ const BidderNavbar = () => {
                                         Center</p><p
                                             className="text-sm font-black text-slate-900 dark:text-white truncate">{user.email}</p>
                                     </div>
-                                    <button onClick={toggleTheme}
-                                        className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all">
-                                        <div className="flex items-center gap-3">{isDark ?
-                                            <Sun size={18} className="text-yellow-500" /> :
-                                            <Moon size={18} className="text-blue-600" />}<span>Appearance</span></div>
-                                        <span
-                                            className="text-[10px] font-black uppercase opacity-40">{isDark ? 'Dark' : 'Light'}</span>
-                                    </button>
+                                    <div className="space-y-1">
+                                        <NavMenuItem icon={<User size={18} />} label="My Profile" />
+                                        <NavMenuItem icon={<Gavel size={18} />} label="My Bids" />
+                                        <NavMenuItem icon={<Heart size={18} />} label="Watchlist" />
+                                        <NavMenuItem icon={<Settings size={18} />} label="Settings" />
+                                        <NavMenuItem icon={<HelpCircle size={18} />} label="Help & Support" />
+                                    </div>
                                     <button onClick={logout}
-                                        className="w-full text-left p-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all flex items-center gap-3 mt-4">Logout
+                                        className="w-full text-left p-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all flex items-center gap-3 mt-4">
+                                        <LogOut size={18} /> Logout
                                     </button>
                                 </motion.div>
                             )}
@@ -89,4 +97,13 @@ const BidderNavbar = () => {
         </nav>
     );
 };
+
+const NavMenuItem = ({ icon, label }) => (
+    <button
+        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
+        <span className="group-hover:text-blue-600 transition-colors">{icon}</span>
+        <span>{label}</span>
+    </button>
+);
+
 export default BidderNavbar;
