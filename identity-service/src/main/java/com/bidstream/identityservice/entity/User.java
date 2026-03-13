@@ -58,7 +58,8 @@ public class User implements UserDetails {
     private UserState currentState = UserState.IDLE;
 
     private boolean isVerified = false;
-
+    private boolean isVerifiedSeller = false;
+    
     @Column(unique = true, updatable = false)
     private String providerId;
 

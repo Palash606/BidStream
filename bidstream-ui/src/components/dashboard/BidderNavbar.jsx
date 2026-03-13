@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Bell, Moon, Sun, ChevronDown, Heart, HelpCircle, LogOut, Settings, User, Gavel } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Bell, Moon, Sun, ChevronDown, Heart, HelpCircle, LogOut, Settings, User, Gavel, Store } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { BidStreamLogo } from '../ui/Logo';
 import { useAuthStore, getProfileColor } from '../../stores';
+import { toast } from 'react-hot-toast';
 
 const BidderNavbar = () => {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+    const switchRole = useAuthStore((state) => state.switchRole);
+    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -20,6 +23,19 @@ const BidderNavbar = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const handleSwitchToSeller = async () => {
+        console.log('BidderNavbar: handleSwitchToSeller triggered');
+        try {
+            const loadingToast = toast.loading('Switching to Seller view...');
+            await switchRole('ROLE_SELLER');
+            toast.success('Switched to Seller mode', { id: loadingToast });
+            navigate('/seller');
+        } catch (error) {
+            console.error('Role switch error:', error);
+            toast.error('Failed to switch roles');
+        }
+    };
 
     const username = user?.email?.split('@')[0] || "palash2105";
     const avatarColor = getProfileColor(username);
@@ -80,6 +96,11 @@ const BidderNavbar = () => {
                                     <div className="space-y-1">
                                         <NavMenuItem icon={<User size={18} />} label="My Profile" />
                                         <NavMenuItem icon={<Gavel size={18} />} label="My Bids" />
+                                        <NavMenuItem 
+                                            icon={<Store size={18} />} 
+                                            label="Sell Products" 
+                                            onClick={handleSwitchToSeller}
+                                        />
                                         <NavMenuItem icon={<Heart size={18} />} label="Watchlist" />
                                         <NavMenuItem icon={<Settings size={18} />} label="Settings" />
                                         <NavMenuItem icon={<HelpCircle size={18} />} label="Help & Support" />
@@ -98,8 +119,9 @@ const BidderNavbar = () => {
     );
 };
 
-const NavMenuItem = ({ icon, label }) => (
+const NavMenuItem = ({ icon, label, onClick }) => (
     <button
+        onClick={onClick}
         className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
         <span className="group-hover:text-blue-600 transition-colors">{icon}</span>
         <span>{label}</span>

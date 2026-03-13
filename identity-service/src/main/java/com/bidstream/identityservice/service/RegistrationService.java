@@ -35,22 +35,47 @@ public class RegistrationService {
     public Map<String, Object> switchRole(String email, String targetRole) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        UserRole newRole = UserRole.valueOf(targetRole.toUpperCase());
+        
+        System.out.println("Processing SwitchRole for " + email + " to " + targetRole);
+        
+        // Robust role normalization
+        String normalizedRole = targetRole.toUpperCase();
+        String enumLookup;
+        
+        if (normalizedRole.contains("SELLER")) {
+            enumLookup = "SELLER";
+        } else if (normalizedRole.contains("BIDDER")) {
+            enumLookup = "BIDDER";
+        } else if (normalizedRole.contains("ADMIN")) {
+            enumLookup = "ADMIN";
+        } else if (normalizedRole.contains("PENDING")) {
+            enumLookup = "ROLE_SELECTION_PENDING";
+        } else {
+            enumLookup = normalizedRole.replace("ROLE_", "");
+        }
+        
+        System.out.println("Enum lookup result: " + enumLookup);
+        
+        try {
+            UserRole newRole = UserRole.valueOf(enumLookup);
+            user.setRole(newRole);
+            user.setLastActiveRole(newRole);
+            userRepository.save(user);
 
-        user.setRole(newRole);
-        user.setLastActiveRole(newRole);
-        userRepository.save(user);
+            // Generate new tokens with the updated role
+            String newAccessToken = jwtService.generateToken(user);
+            String newRefreshToken = jwtService.generateRefreshToken(user);
 
-        // Generate new tokens with the updated role
-        String newAccessToken = jwtService.generateToken(user);
-        String newRefreshToken = jwtService.generateRefreshToken(user);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Successfully switched to " + targetRole + " mode.");
-        response.put("accessToken", newAccessToken);
-        response.put("refreshToken", newRefreshToken);
-        response.put("role", newRole);
-        return response;
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Successfully switched to " + enumLookup + " mode.");
+            response.put("accessToken", newAccessToken);
+            response.put("refreshToken", newRefreshToken);
+            response.put("role", newRole);
+            return response;
+        } catch (IllegalArgumentException e) {
+            System.err.println("CRITICAL: Failed to find enum for " + enumLookup);
+            throw new RuntimeException("Invalid role: " + enumLookup + ". Available roles: BIDDER, SELLER, ADMIN");
+        }
     }
 
     @Transactional

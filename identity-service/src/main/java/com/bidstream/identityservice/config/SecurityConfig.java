@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -45,31 +46,26 @@ public class SecurityConfig {
                                 "/auth/verify-final",
                                 "/auth/countries",
                                 "/auth/verify-2fa",
-                                "/auth/initiate-registration", // Permit pre-registration checks
-                                "/auth/check-username", // Permit username availability check
-                                "/auth/switch-role", // Permit onboarding role assignment
+                                "/auth/initiate-registration",
+                                "/auth/check-username",
+                                "/auth/switch-role",
+                                "/auth/check-verification",
+                                "/auth/verify-otp",
                                 "/auth/forgot-password")
                         .permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        // .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            System.out.println("Authentication failure on: " + request.getRequestURI() + " - " + authException.getMessage());
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
+                        })
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
 
         return http.build();
     }
-
-    // @Bean
-    // public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-    // CorsConfiguration config = new CorsConfiguration();
-    // config.setAllowedOrigins(List.of("http://localhost:5173")); // Gateway passes
-    // original origin
-    // config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    // config.setAllowedHeaders(List.of("*"));
-    // config.setAllowCredentials(true);
-    //
-    // UrlBasedCorsConfigurationSource source = new
-    // UrlBasedCorsConfigurationSource();
-    // source.registerCorsConfiguration("/**", config);
-    // return source;
-    // }
 }
