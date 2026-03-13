@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, Bell, LogOut, Settings, Package, ChevronDown, Heart, HelpCircle, User, Store } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { BidStreamLogo } from '../ui/Logo';
 import { useAuthStore, getProfileColor } from '../../stores';
+import { toast } from 'react-hot-toast';
 
 const DashboardNavbar = () => {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+    const switchRole = useAuthStore((state) => state.switchRole);
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     const [selectedCat, setSelectedCat] = useState("All Categories");
@@ -22,6 +24,20 @@ const DashboardNavbar = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const handleSwitchToSeller = async () => {
+        console.log('handleSwitchToSeller triggered');
+        try {
+            const loadingToast = toast.loading('Switching to Seller view...');
+            await switchRole('ROLE_SELLER');
+            toast.success('Switched to Seller mode', { id: loadingToast });
+            navigate('/seller');
+        } catch (error) {
+            console.error('Role switch error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to switch roles';
+            toast.error(errorMessage);
+        }
+    };
 
     // Profile Logic: Extracts 'P' for 'palash2105'
     const username = user?.email?.split('@')[0] || "palash2105";
@@ -42,7 +58,12 @@ const DashboardNavbar = () => {
                         <span className="hover:text-blue-600 cursor-pointer">Brand Outlet</span>
                     </div>
                     <div className="flex gap-8">
-                        <span className="hover:text-blue-600 cursor-pointer">Sell</span>
+                        <span
+                            onClick={handleSwitchToSeller}
+                            className="hover:text-blue-600 cursor-pointer text-[10px] font-black border border-slate-200 dark:border-slate-800 px-3 py-1 rounded-md"
+                        >
+                            Sell
+                        </span>
                         <span className="hover:text-blue-600 cursor-pointer flex items-center gap-1.5"><Heart
                             size={12} /> Wishlist</span>
                     </div>
@@ -125,7 +146,11 @@ const DashboardNavbar = () => {
                                         <div className="space-y-1">
                                             <NavMenuItem icon={<User size={18} />} label="My Profile" />
                                             <NavMenuItem icon={<Package size={18} />} label="My Orders" />
-                                            <NavMenuItem icon={<Store size={18} />} label="Sell Products" />
+                                            <NavMenuItem
+                                                icon={<Store size={18} />}
+                                                label="Sell Products"
+                                                onClick={handleSwitchToSeller}
+                                            />
                                             <NavMenuItem icon={<Settings size={18} />} label="My Settings" />
                                             <NavMenuItem icon={<HelpCircle size={18} />} label="Help & Support" />
                                         </div>
@@ -144,8 +169,9 @@ const DashboardNavbar = () => {
     );
 };
 
-const NavMenuItem = ({ icon, label }) => (
+const NavMenuItem = ({ icon, label, onClick }) => (
     <button
+        onClick={onClick}
         className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition-all cursor-pointer group">
         <span className="group-hover:text-blue-600 transition-colors">{icon}</span>
         <span>{label}</span>

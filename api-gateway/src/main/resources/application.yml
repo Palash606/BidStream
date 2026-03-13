@@ -23,6 +23,8 @@ spring:
           uri: lb://identity-service
           predicates:
             - Path=/auth/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
         - id: auction-service
           uri: lb://auction-service
           predicates:

@@ -10,6 +10,7 @@ import DashboardLayout from "./layouts/DashboardLayout.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SellerDashboard from "./components/dashboard/SellerDashboard";
 import BidderDashboard from "./components/dashboard/BidderDashboard";
+import SellerVerification from "./components/dashboard/SellerVerification";
 import OnboardingPage from "./pages/OnboardingPage";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
@@ -72,6 +73,13 @@ const MainContent = () => {
                 <ProtectedRoute>
                     <DashboardLayout>
                         <SellerDashboard />
+                    </DashboardLayout>
+                </ProtectedRoute>
+            } />
+            <Route path="/seller/verify" element={
+                <ProtectedRoute>
+                    <DashboardLayout>
+                        <SellerVerification />
                     </DashboardLayout>
                 </ProtectedRoute>
             } />

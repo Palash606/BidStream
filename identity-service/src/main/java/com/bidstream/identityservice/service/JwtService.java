@@ -54,6 +54,7 @@ public class JwtService {
         List<String> roles = user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
         claims.put("roles", roles);
+        claims.put("isVerifiedSeller", user.isVerifiedSeller());
 
         return buildToken(claims, user, jwtExpiration);
     }

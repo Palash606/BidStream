@@ -14,8 +14,9 @@ import {
     Store,
     LogOut
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../stores';
+import { toast } from 'react-hot-toast';
 
 /**
  * PublicNavbar - Fully responsive desktop layout on all screen sizes
@@ -25,6 +26,7 @@ const PublicNavbar = () => {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+    const switchRole = useAuthStore((state) => state.switchRole);
 
     const [selectedCategory, setSelectedCategory] = useState('All Categories');
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -43,6 +45,19 @@ const PublicNavbar = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const handleSwitchToSeller = async () => {
+        console.log('PublicNavbar: handleSwitchToSeller triggered');
+        try {
+            const loadingToast = toast.loading('Switching to Seller view...');
+            await switchRole('ROLE_SELLER');
+            toast.success('Switched to Seller mode', { id: loadingToast });
+            navigate('/seller');
+        } catch (error) {
+            console.error('Role switch error:', error);
+            toast.error('Failed to switch roles');
+        }
+    };
 
     const categories = [
         'All Categories',
@@ -332,7 +347,7 @@ const PublicNavbar = () => {
 
                                 {/* Sell Products Button - Responsive */}
                                 <button
-                                    onClick={() => navigate('/dashboard')}
+                                    onClick={handleSwitchToSeller}
                                     className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] sm:text-xs md:text-sm font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-1 sm:gap-2 cursor-pointer"
                                     aria-label="Sell Products"
                                 >

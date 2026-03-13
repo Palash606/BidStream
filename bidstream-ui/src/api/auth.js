@@ -1,6 +1,6 @@
-import axios from 'axios';
+import api from './axios';
 
-const API_URL = import.meta.env.VITE_IDENTITY_SERVICE_URL || 'http://localhost:8081/api/auth';
+const API_URL = '/auth'; // Using relative path since base URL is in axios instance
 
 /**
  * Authentication API Service
@@ -14,7 +14,7 @@ export const authAPI = {
      */
     register: async (data) => {
         try {
-            const response = await axios.post(`${API_URL}/register`, data);
+            const response = await api.post(`${API_URL}/register`, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -29,7 +29,7 @@ export const authAPI = {
      */
     verifyOTP: async (email, otp) => {
         try {
-            const response = await axios.post(`${API_URL}/verify-otp`, { email, otp });
+            const response = await api.post(`${API_URL}/verify-otp`, { email, otp });
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -43,7 +43,7 @@ export const authAPI = {
      */
     login: async (credentials) => {
         try {
-            const response = await axios.post(`${API_URL}/login`, credentials);
+            const response = await api.post(`${API_URL}/login`, credentials);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -57,7 +57,7 @@ export const authAPI = {
      */
     refreshToken: async (refreshToken) => {
         try {
-            const response = await axios.post(`${API_URL}/refresh`, { refreshToken });
+            const response = await api.post(`${API_URL}/refresh`, { refreshToken });
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -71,7 +71,54 @@ export const authAPI = {
      */
     resendOTP: async (email) => {
         try {
-            const response = await axios.post(`${API_URL}/resend-otp`, { email });
+            const response = await api.post(`${API_URL}/resend-otp`, { email });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Switch user role in the backend
+     * @param {string} email - User email
+     * @param {string} role - New role (ROLE_SELLER or ROLE_BIDDER)
+     * @returns {Promise}
+     */
+    switchRole: async (email, role) => {
+        try {
+            const response = await api.post(`${API_URL}/switch-role`, null, {
+                params: { email, role }
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Submit seller verification details
+     * @param {object} data - Verification details
+     * @returns {Promise}
+     */
+    verifySeller: async (data) => {
+        try {
+            const response = await api.post(`${API_URL}/verify-seller`, data);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Check if user is a verified seller
+     * @param {string} email - User email
+     * @returns {Promise<boolean>}
+     */
+    checkVerification: async (email) => {
+        try {
+            const response = await api.get(`${API_URL}/check-verification`, {
+                params: { email }
+            });
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -110,7 +157,8 @@ export const setupAuthInterceptor = () => {
                         localStorage.setItem('accessToken', response.accessToken);
                         originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
                         return axios(originalRequest);
-                    } catch (refreshError) {
+                    } catch (error) {
+                        console.error('Token refresh failed:', error);
                         // Refresh failed, logout
                         localStorage.removeItem('accessToken');
                         localStorage.removeItem('refreshToken');

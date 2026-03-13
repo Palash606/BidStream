@@ -1,12 +1,10 @@
 package com.bidstream.identityservice.controller;
 
 import com.bidstream.identityservice.dto.RegistrationRequest;
+import com.bidstream.identityservice.dto.SellerVerificationRequest;
 import com.bidstream.identityservice.entity.User;
 import com.bidstream.identityservice.repository.UserRepository;
-import com.bidstream.identityservice.service.CountryCodeService;
-import com.bidstream.identityservice.service.EmailOtpService;
-import com.bidstream.identityservice.service.JwtService;
-import com.bidstream.identityservice.service.RegistrationService;
+import com.bidstream.identityservice.service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +34,8 @@ public class AuthController {
     private JwtService jwtService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private SellerVerificationService verificationService;
 
     private final Map<String, String> resetTokenCache = new ConcurrentHashMap<>();
 
@@ -128,6 +128,20 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/verify-seller")
+    public ResponseEntity<?> verifySeller(@RequestBody SellerVerificationRequest request) {
+        try {
+            return ResponseEntity.ok(verificationService.verifySeller(request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/check-verification")
+    public ResponseEntity<?> checkVerification(@RequestParam String email) {
+        return ResponseEntity.ok(verificationService.isVerifiedSeller(email));
     }
 
     @PostMapping("/initiate-registration")

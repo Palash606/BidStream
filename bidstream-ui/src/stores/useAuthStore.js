@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { authAPI } from '../api/auth';
 
 /**
  * Parse JWT token to extract user information
@@ -40,7 +41,8 @@ const getUserFromToken = (token) => {
         firstName: decoded?.firstName || decoded?.sub?.split('@')[0],
         roles: roles, // Array of roles: ['ROLE_SELLER', 'ROLE_BIDDER']
         activeRole: roles[0], // Current active role
-        userId: decoded?.userId || decoded?.sub
+        userId: decoded?.userId || decoded?.sub,
+        isVerifiedSeller: decoded?.isVerifiedSeller === true
     };
 };
 
@@ -111,19 +113,31 @@ export const useAuthStore = create(
              * Switch active role (Seller ↔ Bidder)
              * @param {string} newRole - 'ROLE_SELLER' or 'ROLE_BIDDER'
              */
-            switchRole: (newRole) => {
+            switchRole: async (newRole) => {
+                console.log('switchRole store action triggered for:', newRole);
                 const { user } = get();
-                if (!user || !user.roles.includes(newRole)) {
-                    console.error('Cannot switch to role:', newRole);
+                if (!user) {
+                    console.warn('switchRole called but no user in store');
                     return;
                 }
 
-                set({
-                    user: {
-                        ...user,
-                        activeRole: newRole
-                    }
-                });
+                try {
+                    // Update backend
+                    await authAPI.switchRole(user.email, newRole);
+
+                    // Update local state ONLY on success
+                    set({
+                        user: {
+                            ...user,
+                            activeRole: newRole
+                        }
+                    });
+                    return { success: true };
+                } catch (error) {
+                    console.error('Failed to switch role in backend:', error);
+                    // Do not update local state on failure
+                    throw error;
+                }
             },
 
             /**
@@ -172,6 +186,28 @@ export const useAuthStore = create(
                         ...updates
                     }
                 });
+            },
+
+            /**
+             * Check and update seller verification status from backend
+             */
+            checkVerificationStatus: async () => {
+                const { user } = get();
+                if (!user) return;
+
+                try {
+                    const isVerified = await authAPI.checkVerification(user.email);
+                    set({
+                        user: {
+                            ...user,
+                            isVerifiedSeller: isVerified
+                        }
+                    });
+                    return isVerified;
+                } catch (error) {
+                    console.error('Failed to check verification status:', error);
+                    return user.isVerifiedSeller;
+                }
             },
 
             /**
