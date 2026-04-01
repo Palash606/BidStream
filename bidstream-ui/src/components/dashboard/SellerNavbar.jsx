@@ -41,6 +41,10 @@ const SellerNavbar = () => {
 
     const handleListProduct = () => {
         if (!user?.isVerifiedSeller) {
+            toast.error('Seller verification required. Please verify your profile first.', {
+                icon: '🔒',
+                duration: 4000,
+            });
             navigate('/seller/verify');
         } else {
             navigate('/product/add');
