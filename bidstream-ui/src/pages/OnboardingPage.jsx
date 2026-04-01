@@ -84,7 +84,8 @@ const OnboardingPage = () => {
             }
 
         } catch (error) {
-            toast.error('Failed to setup account. Please try again.', { id: toastId });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to setup account. Please try again.';
+            toast.error(errorMessage, { id: toastId });
             console.error('Role update failed:', error);
             setLoading(false);
         }

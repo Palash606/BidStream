@@ -15,8 +15,6 @@ const ContactSection = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Implement contact form submission
-        console.log('Contact form submitted:', formData);
     };
 
     const handleChange = (e) => {

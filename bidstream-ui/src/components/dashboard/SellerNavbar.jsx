@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { 
-    Search, Bell, PlusCircle, Wallet, Moon, Sun, ChevronDown, 
-    BarChart3, Package, LogOut, Settings, HelpCircle, User, 
-    Gavel, TrendingUp, ShoppingBag 
+import {
+    Search, Bell, PlusCircle, Wallet, Moon, Sun, ChevronDown,
+    BarChart3, Package, LogOut, Settings, HelpCircle, User,
+    Gavel, TrendingUp, ShoppingBag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores';
@@ -28,15 +28,22 @@ const SellerNavbar = () => {
     }, []);
 
     const handleSwitchToBidder = async () => {
-        console.log('handleSwitchToBidder triggered');
+        const loadingToast = toast.loading('Switching to Bidder view...');
         try {
-            const loadingToast = toast.loading('Switching to Bidder view...');
             await switchRole('ROLE_BIDDER');
             toast.success('Switched to Bidder mode', { id: loadingToast });
             navigate('/bidder');
         } catch (error) {
-            console.error('Role switch error:', error);
-            toast.error('Failed to switch roles');
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to switch roles';
+            toast.error(errorMessage, { id: loadingToast });
+        }
+    };
+
+    const handleListProduct = () => {
+        if (!user?.isVerifiedSeller) {
+            navigate('/seller/verify');
+        } else {
+            navigate('/product/add');
         }
     };
 
@@ -44,7 +51,7 @@ const SellerNavbar = () => {
     const initial = username.charAt(0).toUpperCase();
 
     return (
-        <nav className="w-full border-b border-white/5 bg-slate-950 sticky top-0 z-[60] backdrop-blur-xl bg-slate-950/80">
+        <nav className="w-full border-b border-white/15 bg-slate-950 sticky top-0 z-[60] backdrop-blur-xl bg-slate-950/80">
             <div className="mx-auto flex max-w-[1500px] items-center justify-between px-8 py-4 gap-12">
                 {/* Logo Section */}
                 <div className="flex items-center gap-12">
@@ -55,10 +62,10 @@ const SellerNavbar = () => {
 
                     {/* Navigation Items (Amazon Style - Moved from sidebar) */}
                     <div className="hidden lg:flex items-center gap-8">
-                        <NavLink to="/seller" icon={<BarChart3 size={16} />} label="Dashboard" active />
-                        <NavLink to="/seller/inventory" icon={<Package size={16} />} label="Inventory" />
-                        <NavLink to="/seller/analytics" icon={<TrendingUp size={16} />} label="Analytics" />
-                        <NavLink to="/seller/sales" icon={<ShoppingBag size={16} />} label="Orders" />
+                        <NavLink to="/seller" icon={<BarChart3 size={16} />} label="Dashboard" />
+                        <NavLink to="/products" icon={<Package size={16} />} label="Products" />
+                        <NavLink to="/analytics" icon={<TrendingUp size={16} />} label="Analytics" />
+                        <NavLink to="/orders" icon={<ShoppingBag size={16} />} label="Orders" />
                     </div>
                 </div>
 
@@ -67,10 +74,10 @@ const SellerNavbar = () => {
                     <div className="px-4 text-slate-500 group-focus-within:text-indigo-400">
                         <Search size={18} />
                     </div>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Search inventory, orders, or analytics..."
-                        className="flex-1 bg-transparent px-2 py-3 outline-none text-sm font-medium text-white placeholder:text-slate-500" 
+                        className="flex-1 bg-transparent px-2 py-3 outline-none text-sm font-medium text-white placeholder:text-slate-500"
                     />
                     <div className="p-1 px-2 pr-3 flex items-center gap-2">
                         <span className="text-[10px] font-black text-slate-600 bg-white/5 px-2 py-1 rounded-md">CMD + K</span>
@@ -79,8 +86,11 @@ const SellerNavbar = () => {
 
                 <div className="flex items-center gap-6">
                     {/* Action Buttons */}
-                    <button className="hidden xl:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
-                        <PlusCircle size={16} /> List Item
+                    <button
+                        onClick={handleListProduct}
+                        className="hidden xl:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+                    >
+                        <PlusCircle size={16} /> Add Product
                     </button>
 
                     <div className="flex items-center gap-4 bg-white/5 p-1.5 rounded-2xl">
@@ -90,7 +100,7 @@ const SellerNavbar = () => {
 
                     {/* Profile Dropdown */}
                     <div className="relative" ref={menuRef}>
-                        <button 
+                        <button
                             onClick={() => setMenuOpen(!menuOpen)}
                             className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-all group active:scale-95"
                         >
@@ -106,8 +116,8 @@ const SellerNavbar = () => {
 
                         <AnimatePresence>
                             {menuOpen && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     className="absolute right-0 mt-4 w-72 bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl p-3 z-[70] overflow-hidden"
@@ -118,12 +128,12 @@ const SellerNavbar = () => {
                                         </p>
                                         <p className="text-sm font-black text-white truncate">{user.email}</p>
                                     </div>
-                                    
+
                                     <div className="space-y-1">
                                         <NavMenuItem icon={<User size={18} />} label="My Store Profile" />
-                                        <NavMenuItem 
-                                            icon={<Gavel size={18} className="text-indigo-400" />} 
-                                            label="Bid Products" 
+                                        <NavMenuItem
+                                            icon={<Gavel size={18} className="text-indigo-400" />}
+                                            label="Bid Products"
                                             subLabel="Switch to Bidder mode"
                                             onClick={handleSwitchToBidder}
                                             highlight
@@ -133,7 +143,7 @@ const SellerNavbar = () => {
                                         <NavMenuItem icon={<HelpCircle size={18} />} label="Help & Support" />
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={logout}
                                         className="w-full text-left p-4 text-sm font-black text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all flex items-center gap-3 mt-4 group"
                                     >
@@ -153,7 +163,7 @@ const SellerNavbar = () => {
 const NavLink = ({ to, icon, label }) => {
     const location = useLocation();
     const active = location.pathname === to;
-    
+
     return (
         <Link to={to} className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all group ${active ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
             {icon}
@@ -170,7 +180,7 @@ const NavIconBtn = ({ icon, hasUpdate }) => (
 );
 
 const NavMenuItem = ({ icon, label, subLabel, onClick, highlight }) => (
-    <button 
+    <button
         onClick={onClick}
         className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer group ${highlight ? 'bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/10' : 'hover:bg-white/5'}`}
     >

@@ -47,14 +47,12 @@ const PublicNavbar = () => {
     }, []);
 
     const handleSwitchToSeller = async () => {
-        console.log('PublicNavbar: handleSwitchToSeller triggered');
         try {
             const loadingToast = toast.loading('Switching to Seller view...');
             await switchRole('ROLE_SELLER');
             toast.success('Switched to Seller mode', { id: loadingToast });
             navigate('/seller');
         } catch (error) {
-            console.error('Role switch error:', error);
             toast.error('Failed to switch roles');
         }
     };
