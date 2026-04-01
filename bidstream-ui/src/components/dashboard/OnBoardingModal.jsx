@@ -40,7 +40,8 @@ const OnboardingModal = ({ isOpen, onClose }) => {
             toast.success(`Role set to ${selectedRole}`, { id: toastId });
             setStep(3); // Move to rules
         } catch (err) {
-            toast.error("Persistence failed.", { id: toastId });
+            const errorMessage = err.response?.data?.message || err.message || "Persistence failed.";
+            toast.error(errorMessage, { id: toastId });
         }
     };
 

@@ -11,9 +11,11 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SellerDashboard from "./components/dashboard/SellerDashboard";
 import BidderDashboard from "./components/dashboard/BidderDashboard";
 import SellerVerification from "./components/dashboard/SellerVerification";
+import AddProductPage from "./pages/AddProductPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
+import { Package, TrendingUp, ShoppingBag } from 'lucide-react';
 
 /**
  * Dashboard Router - Generic dashboard redirect based on role
@@ -81,6 +83,44 @@ const MainContent = () => {
                     <DashboardLayout>
                         <SellerVerification />
                     </DashboardLayout>
+                </ProtectedRoute>
+            } />
+            <Route path="/products" element={
+                <ProtectedRoute>
+                    <DashboardLayout>
+                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
+                            <Package size={40} className="mx-auto mb-4 text-indigo-400" />
+                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Inventory Management</h2>
+                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Secure Repository • Node-Alpha</p>
+                        </div>
+                    </DashboardLayout>
+                </ProtectedRoute>
+            } />
+            <Route path="/analytics" element={
+                <ProtectedRoute>
+                    <DashboardLayout>
+                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
+                            <TrendingUp size={40} className="mx-auto mb-4 text-emerald-400" />
+                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Market Analytics</h2>
+                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Real-Time Data Stream • Active</p>
+                        </div>
+                    </DashboardLayout>
+                </ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+                <ProtectedRoute>
+                    <DashboardLayout>
+                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
+                            <ShoppingBag size={40} className="mx-auto mb-4 text-blue-400" />
+                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Order Processing</h2>
+                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Transaction Vault • Encrypted</p>
+                        </div>
+                    </DashboardLayout>
+                </ProtectedRoute>
+            } />
+            <Route path="/product/add" element={
+                <ProtectedRoute>
+                    <AddProductPage />
                 </ProtectedRoute>
             } />
 

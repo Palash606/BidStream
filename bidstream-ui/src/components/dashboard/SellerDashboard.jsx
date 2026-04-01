@@ -18,7 +18,7 @@ const SellerDashboard = () => {
     const navigate = useNavigate();
     const [isBotOpen, setIsBotOpen] = useState(false);
     const [timeRange, setTimeRange] = useState('7D');
-    
+
     // Mock Data for Analytics
     const performanceData = [
         { day: 'Mon', sales: 42000, bids: 120 },
@@ -50,18 +50,12 @@ const SellerDashboard = () => {
         }
     }, [user?.email, checkVerificationStatus]);
 
-    const handleListProduct = () => {
-        if (!user?.isVerifiedSeller) {
-            navigate('/seller/verify');
-        } else {
-            alert("Redirecting to Add Product page...");
-        }
-    };
+
 
     return (
         <div className="min-h-screen bg-[#050510] text-[#a0a0c0] pb-12 font-sans selection:bg-indigo-500/30">
             <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-6">
-                
+
                 {/* Top Action Bar (Amazon Style Density) */}
                 <div className="flex justify-between items-center bg-white/[0.03] border border-white/10 p-4 rounded-2xl backdrop-blur-md">
                     <div className="flex items-center gap-6">
@@ -77,7 +71,7 @@ const SellerDashboard = () => {
                     <div className="flex items-center gap-4">
                         <div className="flex bg-black/40 rounded-lg p-1 border border-white/5">
                             {['7D', '1M', '1Y'].map(range => (
-                                <button 
+                                <button
                                     key={range}
                                     onClick={() => setTimeRange(range)}
                                     className={`px-3 py-1.5 rounded-md text-[9px] font-black transition-all ${timeRange === range ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
@@ -86,21 +80,22 @@ const SellerDashboard = () => {
                                 </button>
                             ))}
                         </div>
-                        <button 
-                            onClick={handleListProduct}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95"
-                        >
-                            <Plus size={14} /> Add Inventory
-                        </button>
+                        <div className="flex bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-xl items-center gap-3 group cursor-pointer hover:bg-indigo-500/15 transition-all">
+                            <Zap size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black uppercase text-indigo-300 tracking-widest leading-none">Market Spotlight</span>
+                                <span className="text-[10px] font-bold text-white leading-tight">Trending: Luxury Timepieces</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Main Dashboard Grid */}
                 <div className="grid grid-cols-12 gap-6">
-                    
+
                     {/* Left Column: Stats & Primary Charts (8/12) */}
                     <div className="col-span-12 xl:col-span-8 space-y-6">
-                        
+
                         {/* High-Density Stat Row */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <CompactStat label="Total Revenue" value="₹4.2M" change="+12.4%" trend="up" icon={<DollarSign size={14} />} />
@@ -123,21 +118,21 @@ const SellerDashboard = () => {
                                     <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-blue-400 rounded-full" /> Bids</div>
                                 </div>
                             </div>
-                            
+
                             <div className="h-64 flex items-end gap-2 px-2 border-b border-white/5 pb-4">
                                 {performanceData.map((d, i) => (
                                     <div key={i} className="flex-1 flex flex-col gap-1 items-center group cursor-pointer relative">
                                         {/* Tooltip */}
                                         <div className="absolute -top-10 bg-indigo-600 text-white text-[8px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all z-20 whitespace-nowrap">
-                                            ₹{(d.sales/1000).toFixed(1)}k • {d.bids} Bids
+                                            ₹{(d.sales / 1000).toFixed(1)}k • {d.bids} Bids
                                         </div>
                                         {/* Bid Bar (bg) */}
-                                        <div className="w-full bg-blue-400/10 rounded-t-lg absolute bottom-4 transition-all" style={{ height: `${(d.bids/350)*100}%` }} />
+                                        <div className="w-full bg-blue-400/10 rounded-t-lg absolute bottom-4 transition-all" style={{ height: `${(d.bids / 350) * 100}%` }} />
                                         {/* Sales Bar (fg) */}
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ height: 0 }}
-                                            animate={{ height: `${(d.sales/120000)*100}%` }}
-                                            className="w-1/2 bg-gradient-to-t from-indigo-700 to-indigo-400 rounded-t-xl z-10 transition-all group-hover:scale-x-110" 
+                                            animate={{ height: `${(d.sales / 120000) * 100}%` }}
+                                            className="w-1/2 bg-gradient-to-t from-indigo-700 to-indigo-400 rounded-t-xl z-10 transition-all group-hover:scale-x-110"
                                         />
                                         <span className="text-[8px] font-black text-slate-500 group-hover:text-white mt-1 uppercase">{d.day}</span>
                                     </div>
@@ -159,10 +154,10 @@ const SellerDashboard = () => {
                                                 <span className="text-white">{c.percentage}%</span>
                                             </div>
                                             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                                                <motion.div 
-                                                    initial={{ width: 0 }} 
+                                                <motion.div
+                                                    initial={{ width: 0 }}
                                                     animate={{ width: `${c.percentage}%` }}
-                                                    className={`h-full ${c.color}`} 
+                                                    className={`h-full ${c.color}`}
                                                 />
                                             </div>
                                         </div>
@@ -190,26 +185,26 @@ const SellerDashboard = () => {
 
                     {/* Right Column: Alerts, Onboarding & Support (4/12) */}
                     <div className="col-span-12 xl:col-span-4 space-y-6">
-                        
+
                         {/* New Seller Onboarding Showcase */}
                         <div className="bg-gradient-to-br from-indigo-900/40 via-blue-900/20 to-transparent border border-indigo-500/30 p-6 rounded-[2.5rem] relative overflow-hidden group">
-                           <div className="absolute -top-10 -right-10 opacity-10 group-hover:rotate-12 transition-transform text-white">
-                               <Package size={150} />
-                           </div>
-                           <div className="relative z-10 space-y-4">
-                               <div className="flex items-center gap-3">
-                                   <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-lg shadow-indigo-600/30">
-                                       <Sparkles size={16} />
-                                   </div>
-                                   <h3 className="text-xs font-black text-white uppercase tracking-widest italic">Inventory Showcase</h3>
-                               </div>
-                               <p className="text-[10px] font-medium leading-relaxed">Preview how your listings captivate high-intent bidders through our Neural Ranker.</p>
-                               
-                               {/* Interactive Mini-Preview */}
-                               <div className="bg-black/40 p-4 rounded-3xl border border-white/10 space-y-3">
-                                   <div className="h-24 bg-slate-800 rounded-2xl overflow-hidden relative border border-white/10 group/item">
-                                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                       <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
+                            <div className="absolute -top-10 -right-10 opacity-10 group-hover:rotate-12 transition-transform text-white">
+                                <Package size={150} />
+                            </div>
+                            <div className="relative z-10 space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-lg shadow-indigo-600/30">
+                                        <Sparkles size={16} />
+                                    </div>
+                                    <h3 className="text-xs font-black text-white uppercase tracking-widest italic">Inventory Showcase</h3>
+                                </div>
+                                <p className="text-[10px] font-medium leading-relaxed">Preview how your listings captivate high-intent bidders through our Neural Ranker.</p>
+
+                                {/* Interactive Mini-Preview */}
+                                <div className="bg-black/40 p-4 rounded-3xl border border-white/10 space-y-3">
+                                    <div className="h-24 bg-slate-800 rounded-2xl overflow-hidden relative border border-white/10 group/item">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                        <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
                                             <div>
                                                 <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Example Lot</p>
                                                 <p className="text-[10px] font-black text-white">Classic Chronograph</p>
@@ -217,20 +212,20 @@ const SellerDashboard = () => {
                                             <div className="text-right">
                                                 <p className="text-[9px] font-black text-indigo-400">₹85,000</p>
                                             </div>
-                                       </div>
-                                       <motion.div 
-                                            animate={{ scale: [1, 1.05, 1] }} 
+                                        </div>
+                                        <motion.div
+                                            animate={{ scale: [1, 1.05, 1] }}
                                             transition={{ duration: 4, repeat: Infinity }}
                                             className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-500 text-[6px] font-black text-white rounded-full uppercase tracking-widest"
                                         >
                                             Live Bid
-                                       </motion.div>
-                                   </div>
-                                   <button className="w-full bg-white/10 hover:bg-white/20 py-2 rounded-xl text-[8px] font-black text-white uppercase transition-all">
-                                       Launch Sample Product
-                                   </button>
-                               </div>
-                           </div>
+                                        </motion.div>
+                                    </div>
+                                    <button className="w-full bg-white/10 hover:bg-white/20 py-2 rounded-xl text-[8px] font-black text-white uppercase transition-all">
+                                        Launch Sample Product
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Alerts & Critical Checks */}
@@ -246,7 +241,7 @@ const SellerDashboard = () => {
                                             <ChevronDown size={14} className="text-rose-500 group-hover:rotate-180 transition-transform" />
                                         </div>
                                         <p className="text-[10px] font-medium leading-tight">Your verification is pending. Professional tools are currently gated.</p>
-                                        <button 
+                                        <button
                                             onClick={() => navigate('/seller/verify')}
                                             className="w-full py-2 bg-rose-500 text-white rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20"
                                         >
@@ -287,6 +282,15 @@ const SellerDashboard = () => {
                                     <span>24/7 Priority Support</span>
                                     <MessageSquareText size={10} className="opacity-0 group-hover:opacity-100 transition-all text-indigo-400" />
                                 </div>
+                                <a
+                                    href="https://bidstream.com/terms"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between text-[9px] font-bold group hover:text-white cursor-pointer transition-colors px-2"
+                                >
+                                    <span>Terms & Conditions</span>
+                                    <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-all text-indigo-400" />
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -296,7 +300,7 @@ const SellerDashboard = () => {
                 <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-px bg-indigo-500/50 hidden md:block" />
-                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">© 2024 BidStream Global Command • Built for High-Stakes Commerce</p>
+                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">© 2026 BidStream Global Command • Built for High-Stakes Commerce</p>
                     </div>
                     <div className="flex gap-2">
                         {[Activity, Gavel, LayoutGrid, User].map((Icon, i) => (
@@ -320,10 +324,9 @@ const CompactStat = ({ label, value, change, trend, icon }) => (
             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 group-hover:text-indigo-400 transition-colors">
                 {icon}
             </div>
-            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
-                trend === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 
+            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${trend === 'up' ? 'bg-emerald-500/10 text-emerald-400' :
                 trend === 'down' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/5 text-slate-500'
-            }`}>
+                }`}>
                 {change}
             </span>
         </div>
@@ -334,14 +337,14 @@ const CompactStat = ({ label, value, change, trend, icon }) => (
 
 const Sparkles = ({ size }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-        <path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        <path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" />
     </svg>
 );
 
 const ChevronDown = ({ size, className }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m6 9 6 6 6-6"/>
+        <path d="m6 9 6 6 6-6" />
     </svg>
 );
 

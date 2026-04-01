@@ -26,16 +26,15 @@ const DashboardNavbar = () => {
     }, []);
 
     const handleSwitchToSeller = async () => {
-        console.log('handleSwitchToSeller triggered');
+        const loadingToast = toast.loading('Switching to Seller view...');
         try {
-            const loadingToast = toast.loading('Switching to Seller view...');
             await switchRole('ROLE_SELLER');
             toast.success('Switched to Seller mode', { id: loadingToast });
             navigate('/seller');
         } catch (error) {
             console.error('Role switch error:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Failed to switch roles';
-            toast.error(errorMessage);
+            toast.error(errorMessage, { id: loadingToast });
         }
     };
 

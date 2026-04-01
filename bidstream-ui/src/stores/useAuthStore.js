@@ -34,7 +34,7 @@ const getUserFromToken = (token) => {
     if (!decoded) return null;
 
     const roles = decoded?.roles || ['ROLE_SELECTION_PENDING'];
-    
+
     return {
         isAuthenticated: true,
         email: decoded?.sub,
@@ -114,30 +114,22 @@ export const useAuthStore = create(
              * @param {string} newRole - 'ROLE_SELLER' or 'ROLE_BIDDER'
              */
             switchRole: async (newRole) => {
-                console.log('switchRole store action triggered for:', newRole);
                 const { user } = get();
                 if (!user) {
-                    console.warn('switchRole called but no user in store');
                     return;
                 }
 
-                try {
-                    // Update backend
-                    await authAPI.switchRole(user.email, newRole);
+                // Update backend
+                await authAPI.switchRole(user.email, newRole);
 
-                    // Update local state ONLY on success
-                    set({
-                        user: {
-                            ...user,
-                            activeRole: newRole
-                        }
-                    });
-                    return { success: true };
-                } catch (error) {
-                    console.error('Failed to switch role in backend:', error);
-                    // Do not update local state on failure
-                    throw error;
-                }
+                // Update local state ONLY on success
+                set({
+                    user: {
+                        ...user,
+                        activeRole: newRole
+                    }
+                });
+                return { success: true };
             },
 
             /**
@@ -159,10 +151,10 @@ export const useAuthStore = create(
                     });
                 } else {
                     // Add new role if not already present
-                    const roles = user.roles.includes(newRole) 
-                        ? user.roles 
+                    const roles = user.roles.includes(newRole)
+                        ? user.roles
                         : [...user.roles, newRole];
-                    
+
                     set({
                         user: {
                             ...user,
