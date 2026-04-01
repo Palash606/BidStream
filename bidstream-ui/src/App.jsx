@@ -13,9 +13,11 @@ import BidderDashboard from "./components/dashboard/BidderDashboard";
 import SellerVerification from "./components/dashboard/SellerVerification";
 import AddProductPage from "./pages/AddProductPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import ProductsPage from "./components/dashboard/seller/ProductsPage";
+import AnalyticsPage from "./components/dashboard/seller/AnalyticsPage";
+import OrdersPage from "./components/dashboard/seller/OrdersPage";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
-import { Package, TrendingUp, ShoppingBag } from 'lucide-react';
 
 /**
  * Dashboard Router - Generic dashboard redirect based on role
@@ -32,7 +34,6 @@ const DashboardRouter = () => {
  * Main application content with STRICT onboarding logic
  */
 const MainContent = () => {
-    const user = useAuthStore((state) => state.user);
     const isOnboardingPending = useAuthStore((state) => state.isOnboardingPending());
     const isDark = useUIStore((state) => state.isDark);
     const location = useLocation();
@@ -87,34 +88,22 @@ const MainContent = () => {
             } />
             <Route path="/products" element={
                 <ProtectedRoute>
-                    <DashboardLayout>
-                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
-                            <Package size={40} className="mx-auto mb-4 text-indigo-400" />
-                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Inventory Management</h2>
-                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Secure Repository • Node-Alpha</p>
-                        </div>
+                    <DashboardLayout fullWidth>
+                        <ProductsPage />
                     </DashboardLayout>
                 </ProtectedRoute>
             } />
             <Route path="/analytics" element={
                 <ProtectedRoute>
-                    <DashboardLayout>
-                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
-                            <TrendingUp size={40} className="mx-auto mb-4 text-emerald-400" />
-                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Market Analytics</h2>
-                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Real-Time Data Stream • Active</p>
-                        </div>
+                    <DashboardLayout fullWidth>
+                        <AnalyticsPage />
                     </DashboardLayout>
                 </ProtectedRoute>
             } />
             <Route path="/orders" element={
                 <ProtectedRoute>
-                    <DashboardLayout>
-                        <div className="p-10 bg-white/5 border border-white/10 rounded-3xl text-center">
-                            <ShoppingBag size={40} className="mx-auto mb-4 text-blue-400" />
-                            <h2 className="text-xl font-black text-white uppercase tracking-widest">Order Processing</h2>
-                            <p className="text-slate-500 text-xs mt-2 uppercase font-bold tracking-tight italic">Transaction Vault • Encrypted</p>
-                        </div>
+                    <DashboardLayout fullWidth>
+                        <OrdersPage />
                     </DashboardLayout>
                 </ProtectedRoute>
             } />
