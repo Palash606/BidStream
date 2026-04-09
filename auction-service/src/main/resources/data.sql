@@ -1,0 +1,12 @@
+INSERT INTO category (name) VALUES ('Luxury Watches & Timepieces') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Fine Art & Paintings') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Vintage Jewellery & Gems') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Rare Collectibles & Memorabilia') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Classic & Exotics Automobiles') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Premium Electronics & Gadgets') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Rare Coins & Currency') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Antique Furniture & Decor') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Designer Fashion & Couture') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Musical Instruments & Gear') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Rare Books & Manuscripts') ON CONFLICT (name) DO NOTHING;
+INSERT INTO category (name) VALUES ('Fine Wine & Spirits') ON CONFLICT (name) DO NOTHING;
