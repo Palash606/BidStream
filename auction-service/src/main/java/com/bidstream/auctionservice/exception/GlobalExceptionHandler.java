@@ -2,7 +2,8 @@ package com.bidstream.auctionservice.exception;
 
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,8 +18,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(UnverifiedSellerException.class)
     public ResponseEntity<Map<String, Object>> handleUnverifiedSeller(UnverifiedSellerException ex) {

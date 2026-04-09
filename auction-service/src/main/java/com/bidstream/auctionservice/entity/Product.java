@@ -48,7 +48,8 @@ public class Product {
 
     // High-End Feature: Backend provides HexCode based on starting letter
     public String getUsernameColorHex() {
-        if (name == null || name.isEmpty()) return "#000000";
+        if (name == null || name.isEmpty())
+            return "#000000";
         char firstChar = name.toUpperCase().charAt(0);
         // Map characters to a professional color palette
         return switch (firstChar) {
@@ -65,7 +66,8 @@ public class Product {
 
     public String getMaskedWinnerName(String realName) {
         if (this.status != ProductStatus.SOLD && this.status != ProductStatus.PAYMENT_PENDING) {
-            if (realName == null || realName.length() < 3) return "***";
+            if (realName == null || realName.length() < 3)
+                return "***";
             return realName.charAt(0) + "****" + realName.charAt(realName.length() - 1);
         }
         return realName; // Show full name only after sold

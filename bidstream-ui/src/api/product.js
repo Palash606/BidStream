@@ -9,10 +9,10 @@ export const productAPI = {
     addProduct: async (productData, imageFiles) => {
         try {
             const formData = new FormData();
-            
+
             // Append product request as a JSON blob
             formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
-            
+
             // Append images
             if (imageFiles && imageFiles.length > 0) {
                 imageFiles.forEach(file => {
@@ -39,7 +39,7 @@ export const productAPI = {
             const params = new URLSearchParams();
             if (filters.categoryId) params.append('categoryId', filters.categoryId);
             if (filters.status && filters.status !== 'All') params.append('status', filters.status);
-            
+
             const response = await api.get(`${API_URL}/seller?${params.toString()}`);
             return response.data;
         } catch (error) {
