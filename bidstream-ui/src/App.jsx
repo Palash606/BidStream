@@ -127,7 +127,7 @@ const MainContent = () => {
             {/* Generic Dashboard Redirect */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
 
-            <Route path="/product/:id" element={<div className="p-20 text-center font-black">Lot Details</div>} />
+            <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );

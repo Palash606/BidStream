@@ -32,20 +32,20 @@ const ITEMS_PER_PAGE = 6;
 
 const STATUS_CONFIG = {
     Published: { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', dot: 'bg-emerald-500' },
-    Draft:     { color: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/25',   dot: 'bg-amber-500' },
-    Inactive:  { color: 'text-slate-400',   bg: 'bg-slate-500/10',   border: 'border-slate-500/25',   dot: 'bg-slate-500' },
+    Draft: { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/25', dot: 'bg-amber-500' },
+    Inactive: { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/25', dot: 'bg-slate-500' },
 };
 
 const CATEGORY_STYLE = {
-    'Luxury Watches':       { text: 'text-indigo-400', bg: 'bg-indigo-500/10',  gradient: 'from-indigo-600/20 to-indigo-900/5' },
-    'Fine Art & Paintings': { text: 'text-amber-400',  bg: 'bg-amber-500/10',   gradient: 'from-amber-600/20 to-amber-900/5' },
-    'Vintage Jewellery':    { text: 'text-pink-400',   bg: 'bg-pink-500/10',    gradient: 'from-pink-600/20 to-pink-900/5' },
-    'Electronics & Gadgets':{ text: 'text-emerald-400',bg: 'bg-emerald-500/10', gradient: 'from-emerald-600/20 to-emerald-900/5' },
-    'Designer Fashion':     { text: 'text-purple-400', bg: 'bg-purple-500/10',  gradient: 'from-purple-600/20 to-purple-900/5' },
-    'Musical Instruments':  { text: 'text-blue-400',   bg: 'bg-blue-500/10',    gradient: 'from-blue-600/20 to-blue-900/5' },
-    'Rare Coins & Currency':{ text: 'text-yellow-400', bg: 'bg-yellow-500/10',  gradient: 'from-yellow-600/20 to-yellow-900/5' },
-    'Antique Furniture':    { text: 'text-orange-400', bg: 'bg-orange-500/10',  gradient: 'from-orange-600/20 to-orange-900/5' },
-    'Books & Manuscripts':  { text: 'text-teal-400',   bg: 'bg-teal-500/10',    gradient: 'from-teal-600/20 to-teal-900/5' },
+    'Luxury Watches': { text: 'text-indigo-400', bg: 'bg-indigo-500/10', gradient: 'from-indigo-600/20 to-indigo-900/5' },
+    'Fine Art & Paintings': { text: 'text-amber-400', bg: 'bg-amber-500/10', gradient: 'from-amber-600/20 to-amber-900/5' },
+    'Vintage Jewellery': { text: 'text-pink-400', bg: 'bg-pink-500/10', gradient: 'from-pink-600/20 to-pink-900/5' },
+    'Electronics & Gadgets': { text: 'text-emerald-400', bg: 'bg-emerald-500/10', gradient: 'from-emerald-600/20 to-emerald-900/5' },
+    'Designer Fashion': { text: 'text-purple-400', bg: 'bg-purple-500/10', gradient: 'from-purple-600/20 to-purple-900/5' },
+    'Musical Instruments': { text: 'text-blue-400', bg: 'bg-blue-500/10', gradient: 'from-blue-600/20 to-blue-900/5' },
+    'Rare Coins & Currency': { text: 'text-yellow-400', bg: 'bg-yellow-500/10', gradient: 'from-yellow-600/20 to-yellow-900/5' },
+    'Antique Furniture': { text: 'text-orange-400', bg: 'bg-orange-500/10', gradient: 'from-orange-600/20 to-orange-900/5' },
+    'Books & Manuscripts': { text: 'text-teal-400', bg: 'bg-teal-500/10', gradient: 'from-teal-600/20 to-teal-900/5' },
 };
 
 const fmt = (n) => n.toLocaleString('en-IN');
@@ -414,25 +414,25 @@ const ProductsPage = () => {
     const handleStatusChange = async (id, newUIStatus) => {
         try {
             let backendStatus = 'DRAFT';
-            if(newUIStatus === 'Published') backendStatus = 'ACTIVE';
-            else if(newUIStatus === 'Inactive') backendStatus = 'CANCELED';
-            
+            if (newUIStatus === 'Published') backendStatus = 'ACTIVE';
+            else if (newUIStatus === 'Inactive') backendStatus = 'CANCELED';
+
             await productAPI.updateStatus(id, backendStatus);
             setProducts(prev => prev.map(p => p.id === id ? { ...p, status: newUIStatus, backendStatus } : p));
             toast.success(`Status updated to ${newUIStatus}`, { icon: '✓' });
-        } catch(error) {
+        } catch (error) {
             toast.error('Failed to change status.');
         }
     };
 
     const handleDelete = async () => {
-        if(!deleteTarget) return;
+        if (!deleteTarget) return;
         try {
             await productAPI.deleteProduct(deleteTarget.id);
             setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
             toast.success('Product deleted');
             setDeleteTarget(null);
-        } catch(error) {
+        } catch (error) {
             toast.error('Failed to delete product.');
         }
     };
