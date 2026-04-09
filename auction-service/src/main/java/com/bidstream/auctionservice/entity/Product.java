@@ -1,5 +1,6 @@
 package com.bidstream.auctionservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +40,11 @@ public class Product {
     private String auctionType; // THREE_HAMMER or END_TIME
     private UUID sellerId;
     private UUID winnerId;
+
+    @JsonProperty("categoryName")
+    public String getCategoryName() {
+        return category != null ? category.getName() : null;
+    }
 
     // High-End Feature: Backend provides HexCode based on starting letter
     public String getUsernameColorHex() {
