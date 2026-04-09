@@ -132,7 +132,15 @@ const CategoryDropdown = ({ value, onChange, categories, error }) => {
     const [search, setSearch] = useState('');
     const ref = useRef(null);
 
-    const filtered = categories.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+    const filtered = categories
+        .filter(c => c.toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => {
+            const aIsOther = a.toLowerCase().includes('other');
+            const bIsOther = b.toLowerCase().includes('other');
+            if (aIsOther && !bIsOther) return 1;
+            if (!aIsOther && bIsOther) return -1;
+            return a.localeCompare(b);
+        });
 
     const handleBlur = useCallback((e) => {
         if (!ref.current?.contains(e.relatedTarget)) {
@@ -786,9 +794,19 @@ const AddProductPage = () => {
             navigate('/products');
         } catch (error) {
             console.error('Failed to add product:', error);
-            const errorMessage = error.message || (typeof error === 'string' ? error : 'Failed to list product. Please try again.');
-            
-            if (errorMessage.includes('not yet verified') || errorMessage.includes('Verification Required')) {
+
+            // error is the raw response body: { timestamp, status, error, message, code, fields? }
+            const errorCode    = error?.code;
+            const errorMessage = error?.message
+                || (typeof error === 'string' ? error : 'Failed to list product. Please try again.');
+
+            // ── Seller not verified ──────────────────────────────────────────
+            const isVerifyError =
+                errorCode === 'SELLER_UNVERIFIED' ||
+                errorMessage.includes('not yet verified') ||
+                errorMessage.includes('Verification Required');
+
+            if (isVerifyError) {
                 toast.error(
                     (t) => (
                         <div className="flex flex-col gap-2">
@@ -806,6 +824,21 @@ const AddProductPage = () => {
                     ),
                     { duration: 6000 }
                 );
+
+            // ── File too large ───────────────────────────────────────────────
+            } else if (errorCode === 'UPLOAD_TOO_LARGE' || error?.status === 400 && errorMessage.toLowerCase().includes('size')) {
+                toast.error('Image too large. Max 10 MB per file, 50 MB total.', { duration: 5000 });
+
+            // ── Per-field validation errors ──────────────────────────────────
+            } else if (errorCode === 'VALIDATION_ERROR' && error?.fields) {
+                const fieldMessages = Object.entries(error.fields)
+                    .map(([field, msg]) => `${field}: ${msg}`)
+                    .join('\n');
+                toast.error(`Validation errors:\n${fieldMessages}`, { duration: 6000 });
+                // Also surface individual field errors in the form
+                setErrors(prev => ({ ...prev, ...error.fields }));
+
+            // ── Generic fallback ─────────────────────────────────────────────
             } else {
                 toast.error(errorMessage);
             }
@@ -813,6 +846,7 @@ const AddProductPage = () => {
             setSubmitting(false);
         }
     };
+
 
     const pageVariants = {
         enter: (dir) => ({ opacity: 0, x: dir > 0 ? 40 : -40 }),

@@ -25,14 +25,16 @@ public class SecurityConfig {
                 .cors(org.springframework.security.config.Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/products/search/**", "/api/categories/all", "/images/**").permitAll()
+                        .requestMatchers("/api/products/search/**", "/api/categories", "/api/categories/all",
+                                "/images/**")
+                        .permitAll()
                         // Allow both ADMIN and SELLER to add categories
-                        .requestMatchers("/api/categories/add").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers("/api/categories/add").hasAnyRole("ADMIN")
                         .requestMatchers("/api/products/debug-auth").authenticated()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products", "/api/products/**").hasAuthority("ROLE_SELLER")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products", "/api/products/**")
+                        .hasAuthority("ROLE_SELLER")
                         .requestMatchers("/api/products/{id}/**").hasAuthority("ROLE_SELLER")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -41,7 +43,8 @@ public class SecurityConfig {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-        configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175"));
+        configuration.setAllowedOrigins(
+                java.util.List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175"));
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.List.of("*"));
         configuration.setAllowCredentials(true);
