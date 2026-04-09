@@ -4,6 +4,14 @@ server:
 spring:
   application:
     name: auction-service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  sql:
+    init:
+      mode: always
 
   datasource:
     url: jdbc:postgresql://localhost:5432/auction_db
@@ -12,6 +20,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -66,3 +75,16 @@ auction:
   max-payment-attempts: 3
   lockout-hours: 12
   payment-base-url: "http://localhost:3000/pay/"
+
+# Image Storage
+# Local dev: relative path 'uploads/products' lands inside the project working dir
+# Production override: set APP_UPLOAD_DIR env var to an absolute path, e.g. /uploads/products
+app:
+  upload:
+    dir: ${APP_UPLOAD_DIR:uploads/products}
+
+logging:
+  level:
+    com.bidstream.auctionservice.service.SellerVerificationService: DEBUG
+    com.bidstream.auctionservice.service.FileSystemStorageService: DEBUG
+    com.bidstream.auctionservice.config.JwtAuthenticationFilter: DEBUG

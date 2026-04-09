@@ -2,6 +2,8 @@ package com.bidstream.auctionservice.repository;
 
 import com.bidstream.auctionservice.entity.Product;
 import com.bidstream.auctionservice.entity.ProductStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,13 +16,19 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
-    List<Product> findBySellerId(UUID sellerId);
+    Page<Product> findBySellerId(UUID sellerId, Pageable pageable);
 
     List<Product> findBySellerIdAndCategoryId(UUID sellerId, Long categoryId);
 
+    Page<Product> findBySellerIdAndCategoryId(UUID sellerId, Long categoryId, Pageable pageable);
+
     List<Product> findBySellerIdAndCategoryIdAndStatus(UUID sellerId, Long categoryId, ProductStatus status);
 
+    Page<Product> findBySellerIdAndCategoryIdAndStatus(UUID sellerId, Long categoryId, ProductStatus status, Pageable pageable);
+
     List<Product> findBySellerIdAndStatus(UUID sellerId, ProductStatus status);
+
+    Page<Product> findBySellerIdAndStatus(UUID sellerId, ProductStatus status, Pageable pageable);
 
 
     @Query("SELECT p FROM Product p WHERE " +

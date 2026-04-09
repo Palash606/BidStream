@@ -71,6 +71,34 @@ export const useAuthStore = create(
                         accessToken: token,
                         refreshToken: localStorage.getItem('refreshToken')
                     });
+
+                    // Validate session asynchronously
+                    setTimeout(() => {
+                        get().validateSession();
+                    }, 100);
+                }
+            },
+
+            /**
+             * Validate session on backend (useful after DB wipes)
+             */
+            validateSession: async () => {
+                const { user, logout } = get();
+                if (!user || !user.userId) return;
+
+                try {
+                    // Attempt to fetch fresh user details.
+                    // If the user doesn't exist in the DB (e.g. after a wipe), this fails.
+                    await authAPI.getUserDetails(user.userId);
+                } catch {
+                    // Any failure here (404, 500, etc.) indicates the session is stale/invalid
+                    console.warn('Session validation failed. User may have been deleted. Clearing session.');
+                    logout();
+                    
+                    // Force a refresh to ensure UI completely resets to public state
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/';
+                    }
                 }
             },
 

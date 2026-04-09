@@ -16,8 +16,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collection;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
@@ -39,6 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // This now pulls the "roles" correctly
                 Collection<? extends GrantedAuthority> authorities = jwtService.extractAuthorities(jwt);
+                
+                // DEBUG LOG: Print authorities to see why we might be getting 403
+                log.debug("Authenticated user: {} with authorities: {}", userEmail, authorities);
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userEmail, null, authorities

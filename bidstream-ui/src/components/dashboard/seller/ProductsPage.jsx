@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../../stores';
 import { toast } from 'react-hot-toast';
+import { productAPI } from '../../../api/product';
 import AdPlacementModal from './AdPlacementModal';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -353,7 +354,8 @@ const ProductsPage = () => {
     const navigate = useNavigate();
     const user = useAuthStore(s => s.user);
 
-    const [products, setProducts] = useState(MOCK_PRODUCTS);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -362,6 +364,40 @@ const ProductsPage = () => {
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [adProduct, setAdProduct] = useState(null);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const data = await productAPI.getSellerProducts();
+            // Map backend product to UI friendly product
+            const mapped = (data.content || data).map(p => ({
+                id: p.id,
+                name: p.name,
+                category: p.categoryName || 'Uncategorized',
+                startingBid: p.initialPrice,
+                status: p.status === 'CANCELED' ? 'Inactive' : p.status === 'ACTIVE' ? 'Published' : 'Draft',
+                backendStatus: p.status, // Keep original if needed
+                addedDate: p.addedDate ? new Date(p.addedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                views: Math.floor(Math.random() * 500), // Placeholder stats
+                bids: p.currentHighestBid > p.initialPrice ? Math.floor(Math.random() * 20) : 0, // Placeholder
+                image: p.imageUrls && p.imageUrls.length > 0 ? `http://localhost:8080${p.imageUrls[0]}` : null
+            }));
+            setProducts(mapped);
+        } catch (error) {
+            console.error('Failed to load products:', error);
+            toast.error('Failed to load your inventory.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.isVerifiedSeller) {
+            fetchProducts();
+        } else {
+            setLoading(false);
+        }
+    }, [user?.isVerifiedSeller]);
 
     const handleAddProduct = () => {
         if (!user?.isVerifiedSeller) {
@@ -375,15 +411,30 @@ const ProductsPage = () => {
         navigate('/product/add');
     };
 
-    const handleStatusChange = (id, newStatus) => {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
-        toast.success(`Status updated to ${newStatus}`, { icon: '✓' });
+    const handleStatusChange = async (id, newUIStatus) => {
+        try {
+            let backendStatus = 'DRAFT';
+            if(newUIStatus === 'Published') backendStatus = 'ACTIVE';
+            else if(newUIStatus === 'Inactive') backendStatus = 'CANCELED';
+            
+            await productAPI.updateStatus(id, backendStatus);
+            setProducts(prev => prev.map(p => p.id === id ? { ...p, status: newUIStatus, backendStatus } : p));
+            toast.success(`Status updated to ${newUIStatus}`, { icon: '✓' });
+        } catch(error) {
+            toast.error('Failed to change status.');
+        }
     };
 
-    const handleDelete = () => {
-        setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
-        toast.success('Product deleted');
-        setDeleteTarget(null);
+    const handleDelete = async () => {
+        if(!deleteTarget) return;
+        try {
+            await productAPI.deleteProduct(deleteTarget.id);
+            setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
+            toast.success('Product deleted');
+            setDeleteTarget(null);
+        } catch(error) {
+            toast.error('Failed to delete product.');
+        }
     };
 
     const exportCSV = () => {

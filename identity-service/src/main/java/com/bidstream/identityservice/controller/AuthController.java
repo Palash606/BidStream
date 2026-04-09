@@ -182,4 +182,19 @@ public class AuthController {
         Map<String, Object> verificationResult = registrationService.verifyAndGenerateToken(email, otp);
         return ResponseEntity.ok(verificationResult);
     }
+
+    @GetMapping("/user-details")
+    public ResponseEntity<?> getUserDetails(@RequestParam UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "phoneNumber", user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "isVerifiedSeller", user.isVerifiedSeller()
+        ));
+    }
 }
