@@ -370,7 +370,7 @@ const ProductsPage = () => {
             setLoading(true);
             const data = await productAPI.getSellerProducts();
             // Map backend product to UI friendly product
-            const mapped = data.map(p => ({
+            const mapped = (data.content || data).map(p => ({
                 id: p.id,
                 name: p.name,
                 category: p.categoryName || 'Uncategorized',

@@ -1,6 +1,7 @@
 package com.bidstream.auctionservice.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -10,7 +11,7 @@ public interface ImageStorageService {
      * @param file the image file to upload
      * @return the unique URL/path to the stored image
      */
-    String saveImage(MultipartFile file);
+    String saveImage(MultipartFile file) throws IOException;
 
     /**
      * Uploads multiple images asynchronously.

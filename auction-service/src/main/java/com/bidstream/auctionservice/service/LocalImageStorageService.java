@@ -34,27 +34,29 @@ public class LocalImageStorageService implements ImageStorageService {
     }
 
     @Override
-    public String saveImage(MultipartFile file) {
+    public String saveImage(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new RuntimeException("Failed to store empty file.");
         }
-        
-        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg");
+
+        String originalFilename = StringUtils
+                .cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg");
         String extension = "";
         int dotIndex = originalFilename.lastIndexOf('.');
-        if(dotIndex > 0) {
+        if (dotIndex > 0) {
             extension = originalFilename.substring(dotIndex);
         }
-        
+
         String newFilename = UUID.randomUUID().toString() + extension;
-        
+
         try {
             if (newFilename.contains("..")) {
-                throw new RuntimeException("Cannot store file with relative path outside current directory " + newFilename);
+                throw new RuntimeException(
+                        "Cannot store file with relative path outside current directory " + newFilename);
             }
             Path targetLocation = this.uploadLocation.resolve(newFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            
+
             // Return the path that the WebMvcConfigurer will use to serve it
             return "/images/products/" + newFilename;
         } catch (IOException ex) {
@@ -69,7 +71,13 @@ public class LocalImageStorageService implements ImageStorageService {
         List<String> uploadedUrls = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
-                uploadedUrls.add(saveImage(file));
+                try {
+                    uploadedUrls.add(saveImage(file));
+                } catch (IOException e) {
+                    log.error("Async upload failed for file", e);
+                    // We throw a runtime exception so that the CompletableFuture fails
+                    throw new RuntimeException("Image upload failed", e);
+                }
             }
         }
         return CompletableFuture.completedFuture(uploadedUrls);
@@ -77,7 +85,8 @@ public class LocalImageStorageService implements ImageStorageService {
 
     @Override
     public void deleteImage(String imageUrl) {
-        if (imageUrl == null || !imageUrl.startsWith("/images/products/")) return;
+        if (imageUrl == null || !imageUrl.startsWith("/images/products/"))
+            return;
         String filename = imageUrl.substring("/images/products/".length());
         try {
             Path file = uploadLocation.resolve(filename).normalize();
