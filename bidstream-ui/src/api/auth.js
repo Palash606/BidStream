@@ -1,3 +1,4 @@
+import axios from 'axios';
 import api from './axios';
 
 const API_URL = '/auth'; // Using relative path since base URL is in axios instance
@@ -123,6 +124,18 @@ export const authAPI = {
         } catch (error) {
             throw error.response?.data || error;
         }
+    },
+
+    /**
+     * Get user details (fails if user no longer exists in DB)
+     * @param {string} userId - User UUID
+     * @returns {Promise}
+     */
+    getUserDetails: async (userId) => {
+        const response = await api.get(`${API_URL}/user-details`, {
+            params: { userId }
+        });
+        return response.data;
     }
 };
 

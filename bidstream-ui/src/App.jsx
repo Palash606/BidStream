@@ -36,6 +36,7 @@ const DashboardRouter = () => {
 const MainContent = () => {
     const isOnboardingPending = useAuthStore((state) => state.isOnboardingPending());
     const isDark = useUIStore((state) => state.isDark);
+    const user = useAuthStore((state) => state.user);
     const location = useLocation();
 
     // Apply theme to DOM on mount and when it changes
@@ -88,28 +89,34 @@ const MainContent = () => {
             } />
             <Route path="/products" element={
                 <ProtectedRoute>
-                    <DashboardLayout fullWidth>
-                        <ProductsPage />
-                    </DashboardLayout>
+                    {user?.isVerifiedSeller ? (
+                        <DashboardLayout fullWidth>
+                            <ProductsPage />
+                        </DashboardLayout>
+                    ) : <Navigate to="/seller" replace />}
                 </ProtectedRoute>
             } />
             <Route path="/analytics" element={
                 <ProtectedRoute>
-                    <DashboardLayout fullWidth>
-                        <AnalyticsPage />
-                    </DashboardLayout>
+                    {user?.isVerifiedSeller ? (
+                        <DashboardLayout fullWidth>
+                            <AnalyticsPage />
+                        </DashboardLayout>
+                    ) : <Navigate to="/seller" replace />}
                 </ProtectedRoute>
             } />
             <Route path="/orders" element={
                 <ProtectedRoute>
-                    <DashboardLayout fullWidth>
-                        <OrdersPage />
-                    </DashboardLayout>
+                    {user?.isVerifiedSeller ? (
+                        <DashboardLayout fullWidth>
+                            <OrdersPage />
+                        </DashboardLayout>
+                    ) : <Navigate to="/seller" replace />}
                 </ProtectedRoute>
             } />
             <Route path="/product/add" element={
                 <ProtectedRoute>
-                    <AddProductPage />
+                    {user?.isVerifiedSeller ? <AddProductPage /> : <Navigate to="/seller" replace />}
                 </ProtectedRoute>
             } />
 

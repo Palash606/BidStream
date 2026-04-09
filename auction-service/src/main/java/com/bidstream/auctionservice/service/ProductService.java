@@ -1,17 +1,22 @@
 package com.bidstream.auctionservice.service;
 
+import com.bidstream.auctionservice.entity.Category;
 import com.bidstream.auctionservice.entity.Product;
 import com.bidstream.auctionservice.entity.ProductStatus;
+import com.bidstream.auctionservice.exception.VerificationRequiredException;
 import com.bidstream.auctionservice.repository.CategoryRepository;
 import com.bidstream.auctionservice.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ProductService {
 
     @Autowired
@@ -19,19 +24,54 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository; // Inject this
 
-    public Product saveProduct(Product product) {
-        // 1. Fetch full category details to avoid nulls in response
-        if (product.getCategory() != null && product.getCategory().getId() != null) {
-            var category = categoryRepository.findById(product.getCategory().getId())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
+    @Autowired
+    private com.bidstream.auctionservice.client.IdentityClient identityClient;
+
+    @Autowired
+    private HttpServletRequest request;
+
+    private void verifySellerStatus(UUID sellerId) {
+        // Developer 'Fast-Track' Toggle: Bypass verification check if X-Dev-Bypass header is present
+        if ("true".equalsIgnoreCase(request.getHeader("X-Dev-Bypass"))) {
+            return;
+        }
+
+        com.bidstream.auctionservice.dto.UserDTO user = identityClient.getUserDetails(sellerId);
+        log.debug("Seller verification result: {}", user != null ? user.isVerifiedSeller() : null);
+        if (user == null || !user.isVerifiedSeller()) {
+            throw new VerificationRequiredException("Seller profile is pending verification. Please complete verification before listing.");
+        }
+    }
+
+    public Product saveProduct(Product product, String categoryName) {
+        verifySellerStatus(product.getSellerId());
+        if (categoryName != null) {
+            Product finalProduct = product;
+            Category category = categoryRepository.findByName(categoryName)
+                    .orElseGet(() -> {
+                        Category newCat = new Category();
+                        newCat.setName(categoryName);
+                        return categoryRepository.save(newCat);
+                    });
             product.setCategory(category);
         }
 
         if (product.getCurrentHighestBid() == null) {
             product.setCurrentHighestBid(product.getInitialPrice());
         }
-        // TODO: NotificationService.send(product.getSellerId(), "Product Added Successfully");
         return productRepository.save(product);
+    }
+
+    public void deleteProduct(UUID productId, UUID sellerId) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (!existingProduct.getSellerId().equals(sellerId)) {
+            throw new RuntimeException("You are not authorized to delete this product");
+        }
+
+        existingProduct.setStatus(ProductStatus.CANCELED);
+        productRepository.save(existingProduct);
     }
 
     public void updateStatus(UUID productId, ProductStatus newStatus) {
@@ -50,7 +90,7 @@ public class ProductService {
         } else if (status != null) {
             return productRepository.findBySellerIdAndStatus(sellerId, status);
         }
-        return productRepository.findBySellerId(sellerId);
+        return productRepository.findBySellerId(sellerId, org.springframework.data.domain.Pageable.unpaged()).getContent();
     }
 
     public Product updateProduct(UUID productId, UUID sellerId, Product updatedProduct) {

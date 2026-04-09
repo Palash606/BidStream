@@ -36,6 +36,7 @@ public class Product {
     private ProductStatus status = ProductStatus.DRAFT;
 
     private LocalDateTime auctionEndTime;
+    private String auctionType; // THREE_HAMMER or END_TIME
     private UUID sellerId;
     private UUID winnerId;
 

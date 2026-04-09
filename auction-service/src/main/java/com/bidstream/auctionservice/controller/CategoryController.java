@@ -17,8 +17,9 @@ public class CategoryController {
 
     @PostMapping("/add")
     public ResponseEntity<Category> addCategory(@RequestBody Category category) {
-        // Only accessible by users with ROLE_ADMIN
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return categoryRepository.findByName(category.getName())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.ok(categoryRepository.save(category)));
     }
 
     @GetMapping("/all")

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
-    List<Product> findBySellerId(UUID sellerId);
+    org.springframework.data.domain.Page<Product> findBySellerId(UUID sellerId, org.springframework.data.domain.Pageable pageable);
 
     List<Product> findBySellerIdAndCategoryId(UUID sellerId, Long categoryId);
 

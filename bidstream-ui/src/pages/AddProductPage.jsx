@@ -8,6 +8,8 @@ import {
     Clock, Hammer, AlertCircle, Info,
     ChevronDown, Loader2, ZoomIn
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { productAPI } from '../api/product';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -807,10 +809,51 @@ const AddProductPage = () => {
     const handleSubmit = async () => {
         if (!validate()) return;
         setSubmitting(true);
-        // Placeholder — backend integration later
-        await new Promise(r => setTimeout(r, 1500));
-        setSubmitting(false);
-        navigate('/seller');
+        try {
+            const productData = {
+                name: basicInfo.name,
+                description: basicInfo.description,
+                categoryName: basicInfo.category,
+                initialPrice: Number(details.initialPrice),
+                weight: details.weight ? Number(details.weight) : null,
+                dimensions: details.dimensions,
+                manufacturer: details.manufacturer,
+                auctionType: auction.auctionType,
+                auctionEndTime: auction.auctionEndTime ? new Date(auction.auctionEndTime).toISOString() : null,
+            };
+            
+            const imageFiles = images.map(img => img.file);
+            await productAPI.addProduct(productData, imageFiles);
+            toast.success('Product listed successfully!');
+            navigate('/products');
+        } catch (error) {
+            console.error('Failed to add product:', error);
+            const errorMessage = error.message || (typeof error === 'string' ? error : 'Failed to list product. Please try again.');
+            
+            if (errorMessage.includes('not yet verified') || errorMessage.includes('Verification Required')) {
+                toast.error(
+                    (t) => (
+                        <div className="flex flex-col gap-2">
+                            <span className="font-semibold text-sm">{errorMessage}</span>
+                            <button
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate('/seller/verify');
+                                }}
+                                className="bg-indigo-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-500 transition-colors w-fit"
+                            >
+                                Go to Verification
+                            </button>
+                        </div>
+                    ),
+                    { duration: 6000 }
+                );
+            } else {
+                toast.error(errorMessage);
+            }
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const pageVariants = {
