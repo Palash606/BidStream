@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from '../../../stores';
 import { toast } from 'react-hot-toast';
 import { productAPI } from '../../../api/product';
+import { categoryAPI } from '../../../api/category';
 import AdPlacementModal from './AdPlacementModal';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -26,7 +27,6 @@ const MOCK_PRODUCTS = [
     { id: 10, name: 'Manuscript — Mughal Era Calligraphy', category: 'Books & Manuscripts', startingBid: 28000, status: 'Draft', addedDate: '2026-03-25' },
 ];
 
-const ALL_CATEGORIES = ['All', 'Luxury Watches', 'Fine Art & Paintings', 'Vintage Jewellery', 'Electronics & Gadgets', 'Designer Fashion', 'Musical Instruments', 'Rare Coins & Currency', 'Antique Furniture', 'Books & Manuscripts'];
 const ALL_STATUSES = ['All', 'Published', 'Draft', 'Inactive'];
 const ITEMS_PER_PAGE = 6;
 
@@ -203,46 +203,64 @@ const MenuItem = ({ icon: Icon, label, color, onClick, danger }) => (
 
 // ─── Delete Confirmation ──────────────────────────────────────────────────────
 
-const DeleteConfirm = ({ product, onConfirm, onCancel }) => (
-    <AnimatePresence>
-        {product && (
-            <>
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={onCancel} className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80]" />
-                <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 pointer-events-none">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 16 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 16 }}
-                        className="pointer-events-auto w-full max-w-sm bg-[#0a0a1f] border border-white/10 rounded-[2rem] p-6 shadow-2xl space-y-5"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center border border-rose-500/20">
-                                <Trash2 size={16} className="text-rose-400" />
+const DeleteConfirm = ({ product, onConfirm, onCancel }) => {
+    const [skipNext, setSkipNext] = useState(false);
+
+    return (
+        <AnimatePresence>
+            {product && (
+                <>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        onClick={onCancel} className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80]" />
+                    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 pointer-events-none">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 16 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 16 }}
+                            className="pointer-events-auto w-full max-w-sm bg-[#0a0a1f] border border-white/10 rounded-[2rem] p-6 shadow-2xl space-y-5"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center border border-rose-500/20">
+                                    <Trash2 size={16} className="text-rose-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-white">Delete Product?</h3>
+                                    <p className="text-[10px] text-slate-500">This action cannot be undone</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-sm font-black text-white">Delete Product?</h3>
-                                <p className="text-[10px] text-slate-500">This action cannot be undone</p>
+                            <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+                                <p className="text-xs font-black text-white truncate">{product.name}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">{product.category}</p>
                             </div>
-                        </div>
-                        <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                            <p className="text-xs font-black text-white truncate">{product.name}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{product.category}</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={onCancel} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                                Cancel
-                            </button>
-                            <button onClick={onConfirm} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                                Delete
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
-            </>
-        )}
-    </AnimatePresence>
-);
+                            
+                            <label className="flex items-center gap-3 px-1 cursor-pointer group">
+                                <div className="relative flex items-center justify-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={skipNext}
+                                        onChange={(e) => setSkipNext(e.target.checked)}
+                                        className="peer appearance-none w-4 h-4 rounded border border-white/10 bg-white/5 checked:bg-indigo-600 checked:border-indigo-500 transition-all cursor-pointer" 
+                                    />
+                                    <CheckCircle size={10} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500 group-hover:text-slate-400 transition-colors uppercase tracking-wider">Don't show this again</span>
+                            </label>
+
+                            <div className="flex gap-3">
+                                <button onClick={onCancel} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                                    Cancel
+                                </button>
+                                <button onClick={() => onConfirm(skipNext)} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                                    Delete
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+};
 
 // ─── Table Footer (Pagination & Row Control) ───────────────────────────────
 
@@ -355,6 +373,7 @@ const ProductsPage = () => {
     const user = useAuthStore(s => s.user);
 
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState(['All']);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
@@ -365,12 +384,22 @@ const ProductsPage = () => {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [adProduct, setAdProduct] = useState(null);
 
-    const fetchProducts = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const data = await productAPI.getSellerProducts();
+            const [productsData, categoriesData] = await Promise.all([
+                productAPI.getSellerProducts(),
+                categoryAPI.getCategories()
+            ]);
+
+            // Map categories
+            if(categoriesData) {
+                const names = categoriesData.map(c => c.name);
+                setCategories(['All', ...names]);
+            }
+
             // Map backend product to UI friendly product
-            const mapped = (data.content || data).map(p => ({
+            const mapped = (productsData.content || productsData).map(p => ({
                 id: p.id,
                 name: p.name,
                 category: p.categoryName || 'Uncategorized',
@@ -384,7 +413,7 @@ const ProductsPage = () => {
             }));
             setProducts(mapped);
         } catch (error) {
-            console.error('Failed to load products:', error);
+            console.error('Failed to load dashboard data:', error);
             toast.error('Failed to load your inventory.');
         } finally {
             setLoading(false);
@@ -393,7 +422,7 @@ const ProductsPage = () => {
 
     useEffect(() => {
         if (user?.isVerifiedSeller) {
-            fetchProducts();
+            fetchData();
         } else {
             setLoading(false);
         }
@@ -425,12 +454,28 @@ const ProductsPage = () => {
         }
     };
 
-    const handleDelete = async () => {
-        if(!deleteTarget) return;
+    const prepareDelete = (product) => {
+        const skipPrompt = localStorage.getItem('skip_delete_confirmation') === 'true';
+        if (skipPrompt) {
+            handleDelete(product.id);
+        } else {
+            setDeleteTarget(product);
+        }
+    };
+
+    const handleDelete = async (productId, skipPreference = false) => {
+        const id = productId || deleteTarget?.id;
+        if(!id) return;
+        
         try {
-            await productAPI.deleteProduct(deleteTarget.id);
-            setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
+            await productAPI.deleteProduct(id);
+            setProducts(prev => prev.filter(p => p.id !== id));
             toast.success('Product deleted');
+            
+            if (skipPreference) {
+                localStorage.setItem('skip_delete_confirmation', 'true');
+            }
+            
             setDeleteTarget(null);
         } catch(error) {
             toast.error('Failed to delete product.');
@@ -547,7 +592,7 @@ const ProductsPage = () => {
                         </AnimatePresence>
                     </div>
 
-                    <FilterDropdown value={categoryFilter} options={ALL_CATEGORIES} onChange={setCategoryFilter} icon={Filter} label="Category" />
+                    <FilterDropdown value={categoryFilter} options={categories} onChange={setCategoryFilter} icon={Filter} label="Category" />
                     <FilterDropdown value={statusFilter} options={ALL_STATUSES} onChange={setStatusFilter} icon={Filter} label="Status" />
 
                     <p className="text-[10px] text-slate-600 font-bold ml-auto tracking-wider">
@@ -556,7 +601,7 @@ const ProductsPage = () => {
                 </div>
 
                 {/* ── Table ── */}
-                <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] overflow-hidden">
+                <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] overflow-visible">
 
                     {/* Header Row */}
                     <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.04] bg-white/[0.01]">
@@ -604,11 +649,14 @@ const ProductsPage = () => {
                                             <div className={`w-10 h-10 rounded-xl flex-shrink-0 bg-gradient-to-br ${catStyle.gradient || 'from-slate-700 to-slate-900'} border border-white/5 flex items-center justify-center`}>
                                                 <Package size={14} className={catStyle.text} />
                                             </div>
-                                            <div className="min-w-0">
+                                            <div 
+                                                className="min-w-0 cursor-pointer"
+                                                onClick={() => navigate(`/product/${product.id}`)}
+                                            >
                                                 <p className="text-xs font-black text-white truncate group-hover:text-indigo-300 transition-colors">
                                                     {product.name}
                                                 </p>
-                                                <p className="text-[9px] text-slate-600 font-medium mt-0.5">ID #{product.id.toString().padStart(4, '0')}</p>
+                                                <p className="text-[9px] text-slate-600 font-medium mt-0.5">ID #{product.id.toString().substring(0, 8)}...</p>
                                             </div>
                                         </div>
 
@@ -648,7 +696,7 @@ const ProductsPage = () => {
                                             <ActionMenu
                                                 product={product}
                                                 onEdit={() => navigate(`/product/edit/${product.id}`)}
-                                                onDelete={() => setDeleteTarget(product)}
+                                                onDelete={() => prepareDelete(product)}
                                                 onPlaceAd={() => setAdProduct(product)}
                                                 rowId={product.id}
                                                 openId={openDropdownId}

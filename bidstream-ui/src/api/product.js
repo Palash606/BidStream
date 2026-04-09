@@ -69,5 +69,17 @@ export const productAPI = {
         } catch (error) {
             throw error.response?.data || error;
         }
+    },
+
+    /**
+     * Get a single product by ID
+     */
+    getProduct: async (productId) => {
+        try {
+            const response = await api.get(`${API_URL}/${productId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     }
 };

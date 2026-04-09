@@ -1,6 +1,7 @@
 package com.bidstream.auctionservice.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-@Slf4j
 @Service
 public class LocalImageStorageService implements ImageStorageService {
 
+    private static final Logger log = LoggerFactory.getLogger(LocalImageStorageService.class);
     private final Path uploadLocation;
 
     public LocalImageStorageService(@Value("${app.upload.dir:uploads/products}") String uploadDir) {
@@ -57,7 +58,6 @@ public class LocalImageStorageService implements ImageStorageService {
             Path targetLocation = this.uploadLocation.resolve(newFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            // Return the path that the WebMvcConfigurer will use to serve it
             return "/images/products/" + newFilename;
         } catch (IOException ex) {
             log.error("Could not store file {}. Please try again!", newFilename, ex);
@@ -75,7 +75,6 @@ public class LocalImageStorageService implements ImageStorageService {
                     uploadedUrls.add(saveImage(file));
                 } catch (IOException e) {
                     log.error("Async upload failed for file", e);
-                    // We throw a runtime exception so that the CompletableFuture fails
                     throw new RuntimeException("Image upload failed", e);
                 }
             }

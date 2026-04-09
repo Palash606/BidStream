@@ -110,6 +110,13 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProduct(@PathVariable UUID id) {
+        return productRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/seller")
     public ResponseEntity<Page<Product>> getSellerProducts(
             @RequestParam(required = false) Long categoryId,

@@ -125,8 +125,7 @@ public class ProductService {
         if (!existing.getSellerId().equals(sellerId)) {
             throw new RuntimeException("You are not authorized to delete this product");
         }
-        existing.setStatus(ProductStatus.CANCELED);
-        productRepository.save(existing);
+        productRepository.delete(existing);
     }
 
     @Transactional
