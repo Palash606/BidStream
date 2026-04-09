@@ -10,23 +10,9 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { productAPI } from '../api/product';
+import api from '../api/axios';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-
-const INITIAL_CATEGORIES = [
-    'Luxury Watches',
-    'Rare Collectibles',
-    'Fine Art & Paintings',
-    'Electronics & Gadgets',
-    'Antique Furniture',
-    'Vintage Jewellery',
-    'Classic Automobiles',
-    'Sports Memorabilia',
-    'Rare Coins & Currency',
-    'Designer Fashion',
-    'Musical Instruments',
-    'Books & Manuscripts',
-];
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -141,11 +127,9 @@ const Stepper = ({ currentStep }) => (
 );
 
 /** Category dropdown with search */
-const CategoryDropdown = ({ value, onChange, categories, onAddCategory, error }) => {
+const CategoryDropdown = ({ value, onChange, categories, error }) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
-    const [addingNew, setAddingNew] = useState(false);
-    const [newCat, setNewCat] = useState('');
     const ref = useRef(null);
 
     const filtered = categories.filter(c => c.toLowerCase().includes(search.toLowerCase()));
@@ -162,19 +146,8 @@ const CategoryDropdown = ({ value, onChange, categories, onAddCategory, error })
         setSearch('');
     };
 
-    const handleAddNew = () => {
-        const trimmed = newCat.trim();
-        if (trimmed && !categories.includes(trimmed)) {
-            onAddCategory(trimmed);
-            onChange(trimmed);
-        }
-        setNewCat('');
-        setAddingNew(false);
-        setOpen(false);
-    };
-
     return (
-        <div ref={ref} className="relative" onBlur={handleBlur}>
+        <div ref={ref} className="relative" onBlur={handleBlur} tabIndex={-1}>
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
@@ -215,7 +188,11 @@ const CategoryDropdown = ({ value, onChange, categories, onAddCategory, error })
 
                         {/* List */}
                         <div className="max-h-52 overflow-y-auto py-1 custom-scroll">
-                            {filtered.length > 0 ? (
+                            {categories.length === 0 ? (
+                                <div className="px-4 py-3 text-xs text-slate-500 text-center flex items-center justify-center gap-2">
+                                    <Loader2 size={14} className="animate-spin" /> Loading categories...
+                                </div>
+                            ) : filtered.length > 0 ? (
                                 filtered.map(cat => (
                                     <button
                                         key={cat}
@@ -230,39 +207,6 @@ const CategoryDropdown = ({ value, onChange, categories, onAddCategory, error })
                                 ))
                             ) : (
                                 <div className="px-4 py-3 text-xs text-slate-500 text-center">No categories found</div>
-                            )}
-                        </div>
-
-                        {/* Add new */}
-                        <div className="border-t border-white/5 p-2">
-                            {!addingNew ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setAddingNew(true)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-colors"
-                                >
-                                    <Plus size={14} /> Add new category
-                                </button>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        value={newCat}
-                                        onChange={e => setNewCat(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && handleAddNew()}
-                                        placeholder="New category name…"
-                                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500/50"
-                                    />
-                                    <button type="button" onClick={handleAddNew}
-                                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors">
-                                        Add
-                                    </button>
-                                    <button type="button" onClick={() => { setAddingNew(false); setNewCat(''); }}
-                                        className="px-2 py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 text-xs rounded-xl transition-colors">
-                                        <X size={13} />
-                                    </button>
-                                </div>
                             )}
                         </div>
                     </motion.div>
@@ -369,7 +313,6 @@ const Step1BasicInfo = ({ data, onChange, errors, categories, setCategories }) =
                 value={data.category}
                 onChange={v => onChange('category', v)}
                 categories={categories}
-                onAddCategory={cat => setCategories(prev => [...prev, cat])}
                 error={errors.category}
             />
         </GlassInput>
@@ -724,7 +667,22 @@ const Step4Images = ({ images, onAdd, onRemove, errors }) => {
 const AddProductPage = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
-    const [categories, setCategories] = useState([...INITIAL_CATEGORIES]);
+    const [categories, setCategories] = useState([]);
+
+    React.useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get('/api/categories');
+                // Extract just the names into an array of strings
+                const catNames = response.data.map(cat => cat.name);
+                setCategories(catNames);
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
+                toast.error('Failed to load categories');
+            }
+        };
+        fetchCategories();
+    }, []);
     const [submitting, setSubmitting] = useState(false);
 
     const [basicInfo, setBasicInfo] = useState({ name: '', description: '', category: '' });
@@ -868,7 +826,7 @@ const AddProductPage = () => {
     const goBack = () => { setDirection(-1); handleBack(); };
 
     return (
-        <div className="min-h-screen bg-[#050510] text-[#a0a0c0] font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-[#050510] text-[#a0a0c0] font-sans selection:bg-indigo-500/30 overflow-x-hidden">
             {/* Ambient glow blobs */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute -top-48 -left-48 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px]" />
@@ -897,8 +855,8 @@ const AddProductPage = () => {
                 <Stepper currentStep={step} />
 
                 {/* Glass card */}
-                <div className="relative bg-white/[0.03] border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/5 via-transparent to-blue-900/5 pointer-events-none" />
+                <div className="relative bg-white/[0.03] border border-white/10 rounded-3xl shadow-2xl backdrop-blur-xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/5 via-transparent to-blue-900/5 pointer-events-none rounded-3xl" />
 
                     <div className="relative z-10 p-6 sm:p-10">
                         {/* Step content with animation */}
@@ -918,7 +876,6 @@ const AddProductPage = () => {
                                         onChange={updateField(setBasicInfo)}
                                         errors={errors}
                                         categories={categories}
-                                        setCategories={setCategories}
                                     />
                                 )}
                                 {step === 2 && (

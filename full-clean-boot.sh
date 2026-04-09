@@ -4,7 +4,7 @@
 PROJECT_ROOT="/Users/aviralshah/IdeaProjects/BidStream"
 JAVA_HOME_21="/opt/homebrew/opt/openjdk@21"
 export JAVA_HOME=$JAVA_HOME_21
-export PATH=$JAVA_HOME/bin:$PATH
+export PATH=$JAVA_HOME/bin:$PATH:/usr/local/bin:/opt/homebrew/bin
 
 echo "🚀 Starting Full Clean Boot for BidStream..."
 echo "Using JDK 21 at: $JAVA_HOME"
