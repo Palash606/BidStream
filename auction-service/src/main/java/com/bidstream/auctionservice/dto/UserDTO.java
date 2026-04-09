@@ -15,4 +15,6 @@ public class UserDTO {
     private String phoneNumber;
     private String firstName;
     private String lastName;
+    @com.fasterxml.jackson.annotation.JsonProperty("isVerifiedSeller")
+    private boolean verifiedSeller;
 }

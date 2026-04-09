@@ -97,7 +97,9 @@ public class RegistrationService {
         String fNameLower = request.firstName().toLowerCase();
         String lNameLower = request.lastName().toLowerCase();
 
-        if (passwordLower.contains(fNameLower) || passwordLower.contains(lNameLower)) {
+        // Prevent false positives for very short names (like 's') by requiring at least 3 chars for this check
+        if ((fNameLower.length() >= 3 && passwordLower.contains(fNameLower)) || 
+            (lNameLower.length() >= 3 && passwordLower.contains(lNameLower))) {
             throw new IllegalArgumentException("Password cannot contain your first or last name.");
         }
 
@@ -115,7 +117,9 @@ public class RegistrationService {
         String fNameLower = request.firstName().toLowerCase();
         String lNameLower = request.lastName().toLowerCase();
 
-        if (passwordLower.contains(fNameLower) || passwordLower.contains(lNameLower)) {
+        // Prevent false positives for very short names (like 's') by requiring at least 3 chars for this check
+        if ((fNameLower.length() >= 3 && passwordLower.contains(fNameLower)) || 
+            (lNameLower.length() >= 3 && passwordLower.contains(lNameLower))) {
             throw new IllegalArgumentException("Password cannot contain your first or last name.");
         }
 

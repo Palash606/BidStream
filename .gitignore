@@ -41,3 +41,6 @@ Thumbs.db
 .mvn/
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+.gitignore
+.gitattributes

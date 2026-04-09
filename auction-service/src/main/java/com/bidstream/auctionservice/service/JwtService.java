@@ -29,13 +29,17 @@ public class JwtService {
 
     public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
         Claims claims = extractAllClaims(token);
-        // CHANGE THIS: Change "authorities" to "roles" to match Identity Service
         List<String> roles = claims.get("roles", List.class);
+        if (roles == null) {
+            roles = claims.get("authorities", List.class);
+        }
 
         if (roles == null) return Collections.emptyList();
 
         return roles.stream()
-                .map(SimpleGrantedAuthority::new)
+                .map(role -> new SimpleGrantedAuthority(
+                        role.startsWith("ROLE_") ? role : "ROLE_" + role
+                ))
                 .collect(Collectors.toList());
     }
 

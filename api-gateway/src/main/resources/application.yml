@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: api-gateway
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
   cloud:
     gateway:
       globalcors:
@@ -28,7 +32,9 @@ spring:
         - id: auction-service
           uri: lb://auction-service
           predicates:
-            - Path=/api/**
+            - Path=/api/**,/images/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
 
 eureka:
   instance:

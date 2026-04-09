@@ -4,14 +4,12 @@ services:
     container_name: bidstream-db
     environment:
       POSTGRES_USER: ${DB_USERNAME:-admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin@1234}
     ports:
       - "5432:5432"
     volumes:
       - ./init-sql:/docker-entrypoint-initdb.d # Run scripts on first start
       - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env.local
 
   redis:
     image: redis:7-alpine
