@@ -3,6 +3,8 @@ package com.bidstream.auctionservice.controller;
 import com.bidstream.auctionservice.dto.ProductRequest;
 import com.bidstream.auctionservice.entity.Product;
 import com.bidstream.auctionservice.entity.ProductStatus;
+import com.bidstream.auctionservice.entity.Category;
+import com.bidstream.auctionservice.repository.CategoryRepository;
 import com.bidstream.auctionservice.repository.ProductRepository;
 import com.bidstream.auctionservice.security.SecurityUtils;
 import com.bidstream.auctionservice.service.ImageStorageService;
@@ -39,6 +41,9 @@ public class ProductController {
     @Autowired
     private ImageStorageService imageStorageService;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @PostMapping
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Product> addProduct(
@@ -70,6 +75,13 @@ public class ProductController {
         updatedFields.setManufacturer(request.getManufacturer());
         updatedFields.setAuctionType(request.getAuctionType());
         updatedFields.setAuctionEndTime(request.getAuctionEndTime());
+        
+        // Handle category update if provided
+        if (request.getCategoryName() != null) {
+            Category category = categoryRepository.findByName(request.getCategoryName())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + request.getCategoryName()));
+            updatedFields.setCategory(category);
+        }
 
         if (images != null && !images.isEmpty()) {
             try {
@@ -108,6 +120,11 @@ public class ProductController {
         UUID sellerId = securityUtils.getAuthenticatedUserId(authHeader);
         productService.deleteProduct(id, sellerId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProduct(@PathVariable UUID id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @GetMapping("/seller")

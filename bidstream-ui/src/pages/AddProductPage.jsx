@@ -1,6 +1,6 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, ArrowRight, Check,
     Package, Tag, Gavel, ImagePlus,
@@ -22,7 +22,7 @@ const STEPS = [
     { id: 1, label: 'Basic Info',      icon: Package },
     { id: 2, label: 'Details',         icon: Tag      },
     { id: 3, label: 'Auction Setup',   icon: Gavel    },
-    { id: 4, label: 'Images',          icon: ImagePlus },
+    { id: 4, label: 'Images (+)',      icon: ImagePlus },
 ];
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
@@ -224,8 +224,15 @@ const CategoryDropdown = ({ value, onChange, categories, error }) => {
     );
 };
 
+const getProductImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `http://localhost:8082${cleanPath}`;
+};
+
 /** Image preview card */
-const ImageCard = ({ file, url, onRemove, index }) => {
+const ImageCard = ({ file, url, onRemove, index, isExisting }) => {
     const [zoomed, setZoomed] = useState(false);
     return (
         <>
@@ -236,24 +243,31 @@ const ImageCard = ({ file, url, onRemove, index }) => {
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="relative group aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5"
             >
-                <img src={url} alt={file.name} className="w-full h-full object-cover" />
+                <img src={url} alt={file?.name || "Product"} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                     <button type="button" onClick={() => setZoomed(true)}
                         className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors">
                         <ZoomIn size={14} />
                     </button>
-                    <button type="button" onClick={() => onRemove(index)}
-                        className="p-1.5 bg-rose-500/70 hover:bg-rose-500 rounded-lg text-white transition-colors">
-                        <X size={14} />
-                    </button>
+                    {!isExisting && (
+                        <button type="button" onClick={() => onRemove(index)}
+                            className="p-1.5 bg-rose-500/70 hover:bg-rose-500 rounded-lg text-white transition-colors">
+                            <X size={14} />
+                        </button>
+                    )}
                 </div>
                 {index === 0 && (
                     <span className="absolute top-2 left-2 bg-indigo-600/90 text-[9px] font-black text-white px-1.5 py-0.5 rounded-md uppercase tracking-wider">
                         Cover
                     </span>
                 )}
-                <div className="absolute bottom-0 inset-x-0 px-2 py-1 bg-black/60 text-[9px] text-slate-400 truncate">
-                    {file.name}
+                {isExisting && (
+                    <span className="absolute bottom-2 right-2 bg-emerald-600/90 text-[8px] font-black text-white px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                        Saved
+                    </span>
+                )}
+                <div className="absolute bottom-0 inset-x-0 px-2 py-1 bg-black/60 text-[9px] text-slate-500 truncate">
+                    {file?.name || "Existing Image"}
                 </div>
             </motion.div>
 
@@ -271,7 +285,7 @@ const ImageCard = ({ file, url, onRemove, index }) => {
                             initial={{ scale: 0.8 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0.8 }}
-                            src={url} alt={file.name}
+                            src={url} alt="Zoomed"
                             className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
                             onClick={e => e.stopPropagation()}
                         />
@@ -288,7 +302,7 @@ const ImageCard = ({ file, url, onRemove, index }) => {
 
 // ─── Step Forms ───────────────────────────────────────────────────────────────
 
-const Step1BasicInfo = ({ data, onChange, errors, categories, setCategories }) => (
+const Step1BasicInfo = ({ data, onChange, errors, categories }) => (
     <div className="space-y-6">
         <div>
             <h2 className="text-xl font-black text-white tracking-tight">Product Information</h2>
@@ -348,12 +362,12 @@ const Step2Details = ({ data, onChange, errors }) => (
                     />
                 </div>
             </GlassInput>
-            <GlassInput label="Weight" error={errors.weight} hint="e.g. 250g, 1.2kg">
+            <GlassInput label="Weight (in grams)" error={errors.weight} hint="e.g. 250g, 550">
                 <input
                     type="text"
                     value={data.weight}
                     onChange={e => onChange('weight', e.target.value)}
-                    placeholder="e.g. 250g"
+                    placeholder="e.g. 55"
                     className={errors.weight ? errorInputClass : inputClass}
                 />
             </GlassInput>
@@ -381,7 +395,6 @@ const Step2Details = ({ data, onChange, errors }) => (
     </div>
 );
 
-/** End time picker — min captured once at component mount via lazy useState */
 const EndTimeInput = ({ data, onChange, errors }) => {
     const [minDateTime] = useState(() =>
         new Date(Date.now() + 3600000).toISOString().slice(0, 16)
@@ -400,26 +413,36 @@ const EndTimeInput = ({ data, onChange, errors }) => {
     );
 };
 
-const Step3AuctionSetup = ({ data, onChange, errors }) => (
+const Step3AuctionSetup = ({ data, onChange, errors, isEdit }) => (
     <div className="space-y-6">
         <div>
             <h2 className="text-xl font-black text-white tracking-tight">Auction Setup</h2>
-            <p className="text-xs text-slate-500 mt-1">Choose how your auction will conclude.</p>
+            <p className="text-xs text-slate-500 mt-1">{isEdit ? 'Auction type is locked for existing listings.' : 'Choose how your auction will conclude.'}</p>
         </div>
+
+        {isEdit && (
+            <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+                <Info size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <strong className="text-amber-300">Note:</strong> You can only update the end time for scheduled auctions. The base auction style ({data.auctionType}) cannot be changed.
+                </p>
+            </div>
+        )}
 
         <GlassInput label="Auction Type" required error={errors.auctionType}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
                 {/* 3-Hammer Bid */}
                 <motion.button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onChange('auctionType', 'THREE_HAMMER')}
+                    disabled={isEdit}
+                    whileHover={!isEdit ? { scale: 1.02 } : {}}
+                    whileTap={!isEdit ? { scale: 0.98 } : {}}
+                    onClick={() => !isEdit && onChange('auctionType', 'THREE_HAMMER')}
                     className={`relative p-5 rounded-2xl border-2 text-left transition-all ${
                         data.auctionType === 'THREE_HAMMER'
                             ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20'
                             : 'border-white/10 bg-white/3 hover:border-white/20'
-                    }`}
+                    } ${isEdit && data.auctionType !== 'THREE_HAMMER' ? 'opacity-40' : ''}`}
                 >
                     <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-xl mt-0.5 ${data.auctionType === 'THREE_HAMMER' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500'}`}>
@@ -430,31 +453,24 @@ const Step3AuctionSetup = ({ data, onChange, errors }) => (
                                 3-Hammer Bid
                             </p>
                             <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                                Auction ends after 3 consecutive bids with no counter. Classic auctioneer style — <em>Going once, going twice, sold!</em>
+                                Auction ends after 3 consecutive bids with no counter.
                             </p>
                         </div>
                     </div>
-                    {data.auctionType === 'THREE_HAMMER' && (
-                        <motion.div
-                            layoutId="auction-check"
-                            className="absolute top-3 right-3 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center"
-                        >
-                            <Check size={11} className="text-white" strokeWidth={3} />
-                        </motion.div>
-                    )}
                 </motion.button>
 
                 {/* Regular End Time */}
                 <motion.button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onChange('auctionType', 'END_TIME')}
+                    disabled={isEdit}
+                    whileHover={!isEdit ? { scale: 1.02 } : {}}
+                    whileTap={!isEdit ? { scale: 0.98 } : {}}
+                    onClick={() => !isEdit && onChange('auctionType', 'END_TIME')}
                     className={`relative p-5 rounded-2xl border-2 text-left transition-all ${
                         data.auctionType === 'END_TIME'
                             ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
                             : 'border-white/10 bg-white/3 hover:border-white/20'
-                    }`}
+                    } ${isEdit && data.auctionType !== 'END_TIME' ? 'opacity-40' : ''}`}
                 >
                     <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-xl mt-0.5 ${data.auctionType === 'END_TIME' ? 'bg-blue-500/20 text-blue-300' : 'bg-white/5 text-slate-500'}`}>
@@ -465,18 +481,10 @@ const Step3AuctionSetup = ({ data, onChange, errors }) => (
                                 Scheduled End Time
                             </p>
                             <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                                Auction closes at a fixed date and time. Highest bid at closing wins.
+                                Auction closes at a fixed date and time.
                             </p>
                         </div>
                     </div>
-                    {data.auctionType === 'END_TIME' && (
-                        <motion.div
-                            layoutId="auction-check"
-                            className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"
-                        >
-                            <Check size={11} className="text-white" strokeWidth={3} />
-                        </motion.div>
-                    )}
                 </motion.button>
             </div>
         </GlassInput>
@@ -487,60 +495,26 @@ const Step3AuctionSetup = ({ data, onChange, errors }) => (
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
                     className="overflow-hidden"
                 >
                     <EndTimeInput data={data} onChange={onChange} errors={errors} />
                 </motion.div>
             )}
         </AnimatePresence>
-
-        {data.auctionType === 'THREE_HAMMER' && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl flex items-start gap-3"
-            >
-                <Info size={15} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                    In <strong className="text-indigo-300">3-Hammer Bid</strong> mode, the auction closes automatically after the bid receives no counter-bid three consecutive times.
-                    No end time is required — the system manages the closure dynamically.
-                </p>
-            </motion.div>
-        )}
     </div>
 );
 
-const Step4Images = ({ images, onAdd, onRemove, errors }) => {
+const Step4Images = ({ images, existingImages, onAdd, onRemove, errors, isEdit }) => {
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
     const isMobile = isMobileDevice();
 
-    const validateAndAdd = (files) => {
-        const fileArr = Array.from(files);
-        return fileArr.map(file => {
-            if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-                return { error: `"${file.name}" is not a supported image format (PNG, JPG, SVG, WEBP, GIF).` };
-            }
-            if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-                return { error: `"${file.name}" exceeds the ${MAX_IMAGE_SIZE_MB}MB size limit.` };
-            }
-            return { file };
-        });
-    };
-
     const handleFiles = (files) => {
-        const remaining = MAX_IMAGES - images.length;
+        const remaining = MAX_IMAGES - (images.length + existingImages.length);
         if (remaining <= 0) return;
-        const results = validateAndAdd(Array.from(files).slice(0, remaining));
-        onAdd(results);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setDragOver(false);
-        handleFiles(e.dataTransfer.files);
+        const fileArr = Array.from(files).slice(0, remaining).map(file => ({ file, url: URL.createObjectURL(file) }));
+        onAdd(fileArr);
     };
 
     return (
@@ -548,124 +522,32 @@ const Step4Images = ({ images, onAdd, onRemove, errors }) => {
             <div>
                 <h2 className="text-xl font-black text-white tracking-tight">Product Images</h2>
                 <p className="text-xs text-slate-500 mt-1">
-                    Add up to {MAX_IMAGES} images. The first image will be the cover. Supported: PNG, JPG, JPEG, SVG, WEBP, GIF.
+                    Add new images to your listing. {isEdit ? 'Existing images are saved below.' : ''}
                 </p>
             </div>
 
-            {/* Upload Zone */}
             <motion.div
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                animate={{
-                    borderColor: dragOver ? 'rgba(99,102,241,0.7)' : 'rgba(255,255,255,0.1)',
-                    backgroundColor: dragOver ? 'rgba(99,102,241,0.07)' : 'rgba(255,255,255,0.02)',
-                }}
-                className="border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all"
-                onClick={() => images.length < MAX_IMAGES && fileInputRef.current?.click()}
+                onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+                animate={{ borderColor: dragOver ? 'rgba(99,102,241,0.7)' : 'rgba(255,255,255,0.1)' }}
+                className="border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer bg-white/[0.02]"
+                onClick={() => (images.length + existingImages.length) < MAX_IMAGES && fileInputRef.current?.click()}
             >
-                <motion.div
-                    animate={{ y: dragOver ? -6 : 0 }}
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center ${dragOver ? 'bg-indigo-500/20' : 'bg-white/5'}`}
-                >
-                    <Upload size={24} className={dragOver ? 'text-indigo-300' : 'text-slate-500'} />
-                </motion.div>
-                <div className="text-center space-y-1">
-                    <p className="text-sm font-semibold text-slate-300">
-                        {dragOver ? 'Drop images here!' : 'Drag & drop images or click to browse'}
-                    </p>
-                    <p className="text-[11px] text-slate-600">
-                        PNG, JPG, JPEG, SVG, WEBP, GIF • Max {MAX_IMAGE_SIZE_MB}MB per image • Up to {MAX_IMAGES} images
-                    </p>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap justify-center">
-                    <button
-                        type="button"
-                        onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                        disabled={images.length >= MAX_IMAGES}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
-                    >
-                        <Upload size={13} /> Upload Files
-                    </button>
-                    {isMobile && (
-                        <button
-                            type="button"
-                            onClick={e => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                            disabled={images.length >= MAX_IMAGES}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/20"
-                        >
-                            <Camera size={13} /> Take Photo
-                        </button>
-                    )}
-                </div>
-                {images.length >= MAX_IMAGES && (
-                    <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
-                        <AlertCircle size={11} /> Maximum {MAX_IMAGES} images reached
-                    </p>
-                )}
+                <Upload size={24} className="text-slate-500" />
+                <p className="text-sm font-semibold text-slate-300">Click to upload new images</p>
+                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={e => { handleFiles(e.target.files); e.target.value = ''; }} />
             </motion.div>
 
-            {/* Hidden inputs */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp,image/gif"
-                multiple
-                className="hidden"
-                onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
-            />
-            <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
-            />
-
-            {/* Errors */}
-            <AnimatePresence>
-                {errors.images && errors.images.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="space-y-2"
-                    >
-                        {errors.images.map((err, i) => (
-                            <div key={i} className="flex items-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
-                                <AlertCircle size={13} className="text-rose-400 flex-shrink-0" />
-                                <p className="text-xs text-rose-300">{err}</p>
-                            </div>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Preview Grid */}
-            <AnimatePresence mode="popLayout">
-                {images.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
-                    >
-                        {images.map((img, i) => (
-                            <ImageCard key={img.url} file={img.file} url={img.url} onRemove={onRemove} index={i} />
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {errors.imageRequired && (
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-1.5 text-xs text-rose-400 font-medium"
-                >
-                    <AlertCircle size={12} /> {errors.imageRequired}
-                </motion.p>
-            )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {existingImages.map((url, i) => (
+                    <ImageCard key={`existing-${i}`} url={getProductImageUrl(url)} isExisting index={i} />
+                ))}
+                {images.map((img, i) => (
+                    <ImageCard key={img.url} file={img.file} url={img.url} onRemove={onRemove} index={i} />
+                ))}
+            </div>
+            {errors.imageRequired && <p className="text-xs text-rose-400">{errors.imageRequired}</p>}
         </div>
     );
 };
@@ -673,104 +555,72 @@ const Step4Images = ({ images, onAdd, onRemove, errors }) => {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 const AddProductPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
+    const isEdit = !!id;
+
     const [step, setStep] = useState(1);
     const [categories, setCategories] = useState([]);
-
-    React.useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await api.get('/api/categories');
-                // Extract just the names into an array of strings
-                const catNames = response.data.map(cat => cat.name);
-                setCategories(catNames);
-            } catch (error) {
-                console.error('Failed to fetch categories:', error);
-                toast.error('Failed to load categories');
-            }
-        };
-        fetchCategories();
-    }, []);
+    const [loading, setLoading] = useState(isEdit);
     const [submitting, setSubmitting] = useState(false);
 
     const [basicInfo, setBasicInfo] = useState({ name: '', description: '', category: '' });
     const [details, setDetails] = useState({ initialPrice: '', weight: '', dimensions: '', manufacturer: '' });
     const [auction, setAuction] = useState({ auctionType: '', auctionEndTime: '' });
     const [images, setImages] = useState([]);
-    const [imageErrors, setImageErrors] = useState([]);
-
+    const [existingImages, setExistingImages] = useState([]);
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                const catsRes = await api.get('/api/categories');
+                setCategories(catsRes.data.map(c => c.name));
+
+                if (isEdit) {
+                    const product = await productAPI.getProduct(id);
+                    setBasicInfo({ name: product.name, description: product.description, category: product.categoryName });
+                    setDetails({ initialPrice: product.initialPrice, weight: product.weight || '', dimensions: product.dimensions || '', manufacturer: product.manufacturer || '' });
+                    setAuction({ auctionType: product.auctionType, auctionEndTime: product.auctionEndTime ? product.auctionEndTime.slice(0, 16) : '' });
+                    setExistingImages(product.imageUrls || []);
+                }
+            } catch (err) {
+                toast.error(isEdit ? "Failed to load product" : "Failed to load categories");
+                if (isEdit) navigate('/products');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, [id, isEdit, navigate]);
 
     const updateField = (setter) => (field, value) => {
         setter(prev => ({ ...prev, [field]: value }));
         setErrors(prev => ({ ...prev, [field]: undefined }));
     };
 
-    // Validation per step
     const validate = () => {
         const errs = {};
         if (step === 1) {
             if (!basicInfo.name.trim()) errs.name = 'Product name is required.';
-            else if (basicInfo.name.trim().length < 5) errs.name = 'Name must be at least 5 characters.';
             if (!basicInfo.description.trim()) errs.description = 'Description is required.';
-            else if (basicInfo.description.trim().length < 20) errs.description = 'Description must be at least 20 characters.';
-            if (!basicInfo.category) errs.category = 'Please select a category.';
+            if (!basicInfo.category) errs.category = 'Category is required.';
         }
         if (step === 2) {
             if (!details.initialPrice) errs.initialPrice = 'Starting bid is required.';
-            else if (isNaN(Number(details.initialPrice)) || Number(details.initialPrice) <= 0) errs.initialPrice = 'Enter a valid positive amount.';
         }
-        if (step === 3) {
-            if (!auction.auctionType) errs.auctionType = 'Please select an auction type.';
-            if (auction.auctionType === 'END_TIME') {
-                if (!auction.auctionEndTime) errs.auctionEndTime = 'End date & time is required for this auction type.';
-                else if (new Date(auction.auctionEndTime) <= new Date(Date.now() + 3600000 - 60000)) {
-                    errs.auctionEndTime = 'End time must be at least 1 hour from now.';
-                }
-            }
+        if (step === 3 && !isEdit) {
+            if (!auction.auctionType) errs.auctionType = 'Select auction type.';
         }
-        if (step === 4) {
-            if (images.length === 0) errs.imageRequired = 'Please upload at least one product image.';
+        if (step === 4 && !isEdit && images.length === 0 && existingImages.length === 0) {
+            errs.imageRequired = 'At least one image is required.';
         }
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
 
-    const handleNext = () => {
-        if (validate()) {
-            setStep(s => Math.min(s + 1, STEPS.length));
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
-    const handleBack = () => {
-        setStep(s => Math.max(s - 1, 1));
-        setErrors({});
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handleImageAdd = (results) => {
-        const errs = results.filter(r => r.error).map(r => r.error);
-        const valid = results.filter(r => r.file).map(r => ({
-            file: r.file,
-            url: URL.createObjectURL(r.file),
-        }));
-        setImageErrors(errs);
-        if (valid.length) {
-            setImages(prev => [...prev, ...valid]);
-            setErrors(prev => ({ ...prev, imageRequired: undefined }));
-        }
-    };
-
-    const handleImageRemove = (index) => {
-        setImages(prev => {
-            const next = [...prev];
-            URL.revokeObjectURL(next[index].url);
-            next.splice(index, 1);
-            return next;
-        });
-        setImageErrors([]);
-    };
+    const handleNext = () => { if (validate()) setStep(s => Math.min(s + 1, STEPS.length)); };
+    const handleBack = () => { setStep(s => Math.max(s - 1, 1)); setErrors({}); };
 
     const handleSubmit = async () => {
         if (!validate()) return;
@@ -781,221 +631,84 @@ const AddProductPage = () => {
                 description: basicInfo.description,
                 categoryName: basicInfo.category,
                 initialPrice: Number(details.initialPrice),
-                weight: details.weight ? Number(details.weight) : null,
+                weight: details.weight || null,
                 dimensions: details.dimensions,
                 manufacturer: details.manufacturer,
                 auctionType: auction.auctionType,
                 auctionEndTime: auction.auctionEndTime ? new Date(auction.auctionEndTime).toISOString() : null,
             };
-            
+
             const imageFiles = images.map(img => img.file);
-            await productAPI.addProduct(productData, imageFiles);
-            toast.success('Product listed successfully!');
+            if (isEdit) {
+                await productAPI.updateProduct(id, productData, imageFiles);
+                toast.success('Product updated successfully!');
+            } else {
+                await productAPI.addProduct(productData, imageFiles);
+                toast.success('Product listed successfully!');
+            }
             navigate('/products');
         } catch (error) {
-            console.error('Failed to add product:', error);
-
-            // error is the raw response body: { timestamp, status, error, message, code, fields? }
-            const errorCode    = error?.code;
-            const errorMessage = error?.message
-                || (typeof error === 'string' ? error : 'Failed to list product. Please try again.');
-
-            // ── Seller not verified ──────────────────────────────────────────
-            const isVerifyError =
-                errorCode === 'SELLER_UNVERIFIED' ||
-                errorMessage.includes('not yet verified') ||
-                errorMessage.includes('Verification Required');
-
-            if (isVerifyError) {
-                toast.error(
-                    (t) => (
-                        <div className="flex flex-col gap-2">
-                            <span className="font-semibold text-sm">{errorMessage}</span>
-                            <button
-                                onClick={() => {
-                                    toast.dismiss(t.id);
-                                    navigate('/seller/verify');
-                                }}
-                                className="bg-indigo-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-500 transition-colors w-fit"
-                            >
-                                Go to Verification
-                            </button>
-                        </div>
-                    ),
-                    { duration: 6000 }
-                );
-
-            // ── File too large ───────────────────────────────────────────────
-            } else if (errorCode === 'UPLOAD_TOO_LARGE' || error?.status === 400 && errorMessage.toLowerCase().includes('size')) {
-                toast.error('Image too large. Max 10 MB per file, 50 MB total.', { duration: 5000 });
-
-            // ── Per-field validation errors ──────────────────────────────────
-            } else if (errorCode === 'VALIDATION_ERROR' && error?.fields) {
-                const fieldMessages = Object.entries(error.fields)
-                    .map(([field, msg]) => `${field}: ${msg}`)
-                    .join('\n');
-                toast.error(`Validation errors:\n${fieldMessages}`, { duration: 6000 });
-                // Also surface individual field errors in the form
-                setErrors(prev => ({ ...prev, ...error.fields }));
-
-            // ── Generic fallback ─────────────────────────────────────────────
-            } else {
-                toast.error(errorMessage);
-            }
+            toast.error(error?.message || 'Action failed');
         } finally {
             setSubmitting(false);
         }
     };
 
-
-    const pageVariants = {
-        enter: (dir) => ({ opacity: 0, x: dir > 0 ? 40 : -40 }),
-        center: { opacity: 1, x: 0 },
-        exit: (dir) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
-    };
-
-    const [direction, setDirection] = useState(1);
-
-    const goNext = () => { setDirection(1); handleNext(); };
-    const goBack = () => { setDirection(-1); handleBack(); };
+    if (loading) return (
+        <div className="min-h-screen bg-[#050510] flex items-center justify-center">
+            <Loader2 className="animate-spin text-indigo-500" />
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-[#050510] text-[#a0a0c0] font-sans selection:bg-indigo-500/30 overflow-x-hidden">
-            {/* Ambient glow blobs */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-48 -left-48 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px]" />
-                <div className="absolute -bottom-48 -right-48 w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-[100px]" />
-            </div>
-
-            <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8">
-
-                {/* Back button */}
-                <button
-                    type="button"
-                    onClick={() => navigate('/seller')}
-                    className="flex items-center gap-2 text-slate-500 hover:text-white text-xs font-semibold transition-colors group mb-8"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Dashboard
+        <div className="min-h-screen bg-[#050510] text-[#a0a0c0] font-sans selection:bg-indigo-500/30">
+            <div className="max-w-3xl mx-auto px-4 py-8">
+                <button onClick={() => navigate('/products')} className="flex items-center gap-2 text-slate-500 hover:text-white text-xs font-semibold mb-8 group">
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                 </button>
 
-                {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">List New Product</h1>
-                    <p className="text-xs text-slate-500 mt-1">Complete all steps to publish your lot to the auction marketplace.</p>
+                    <h1 className="text-3xl font-black text-white tracking-tight">{isEdit ? 'Update Product' : 'List New Product'}</h1>
+                    <p className="text-xs text-slate-500 mt-1">{isEdit ? 'Modify your listing details.' : 'Complete all steps to publish your lot to the auction marketplace.'}</p>
                 </div>
 
-                {/* Stepper */}
                 <Stepper currentStep={step} />
 
-                {/* Glass card */}
-                <div className="relative bg-white/[0.03] border border-white/10 rounded-3xl shadow-2xl backdrop-blur-xl">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/5 via-transparent to-blue-900/5 pointer-events-none rounded-3xl" />
-
-                    <div className="relative z-10 p-6 sm:p-10">
-                        {/* Step content with animation */}
-                        <AnimatePresence mode="wait" custom={direction}>
-                            <motion.div
-                                key={step}
-                                custom={direction}
-                                variants={pageVariants}
-                                initial="enter"
-                                animate="center"
-                                exit="exit"
-                                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                            >
-                                {step === 1 && (
-                                    <Step1BasicInfo
-                                        data={basicInfo}
-                                        onChange={updateField(setBasicInfo)}
-                                        errors={errors}
-                                        categories={categories}
-                                    />
-                                )}
-                                {step === 2 && (
-                                    <Step2Details
-                                        data={details}
-                                        onChange={updateField(setDetails)}
-                                        errors={errors}
-                                    />
-                                )}
-                                {step === 3 && (
-                                    <Step3AuctionSetup
-                                        data={auction}
-                                        onChange={updateField(setAuction)}
-                                        errors={errors}
-                                    />
-                                )}
-                                {step === 4 && (
-                                    <Step4Images
-                                        images={images}
-                                        onAdd={handleImageAdd}
-                                        onRemove={handleImageRemove}
-                                        errors={{ images: imageErrors, imageRequired: errors.imageRequired }}
-                                    />
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
-
-                        {/* Navigation */}
-                        <div className="flex items-center justify-between mt-10 pt-6 border-t border-white/5">
-                            <button
-                                type="button"
-                                onClick={goBack}
-                                disabled={step === 1}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 text-sm font-semibold rounded-xl transition-all"
-                            >
-                                <ArrowLeft size={15} /> Previous
-                            </button>
-
-                            <div className="flex items-center gap-2">
-                                {STEPS.map(s => (
-                                    <div
-                                        key={s.id}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                                            s.id === step ? 'w-6 bg-indigo-500' : s.id < step ? 'w-3 bg-indigo-400/50' : 'w-3 bg-white/10'
-                                        }`}
-                                    />
-                                ))}
-                            </div>
-
-                            {step < STEPS.length ? (
-                                <button
-                                    type="button"
-                                    onClick={goNext}
-                                    className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/25"
-                                >
-                                    Next <ArrowRight size={15} />
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/25"
-                                >
-                                    {submitting ? (
-                                        <><Loader2 size={15} className="animate-spin" /> Publishing…</>
-                                    ) : (
-                                        <><Check size={15} /> Publish Listing</>
-                                    )}
-                                </button>
+                <div className="relative bg-white/[0.03] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
+                    <AnimatePresence mode="wait">
+                        <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                            {step === 1 && <Step1BasicInfo data={basicInfo} onChange={updateField(setBasicInfo)} errors={errors} categories={categories} />}
+                            {step === 2 && <Step2Details data={details} onChange={updateField(setDetails)} errors={errors} />}
+                            {step === 3 && <Step3AuctionSetup data={auction} onChange={updateField(setAuction)} errors={errors} isEdit={isEdit} />}
+                            {step === 4 && (
+                                <Step4Images 
+                                    images={images} 
+                                    existingImages={existingImages} 
+                                    onAdd={(valid) => setImages(prev => [...prev, ...valid])} 
+                                    onRemove={(idx) => setImages(prev => prev.filter((_, i) => i !== idx))} 
+                                    errors={errors} 
+                                    isEdit={isEdit} 
+                                />
                             )}
-                        </div>
+                        </motion.div>
+                    </AnimatePresence>
+
+                    <div className="flex items-center justify-between mt-10 pt-6 border-t border-white/5">
+                        <button disabled={step === 1} onClick={handleBack} className="px-5 py-2.5 bg-white/5 rounded-xl text-sm font-semibold disabled:opacity-20 text-slate-300">
+                            Previous
+                        </button>
+                        {step < STEPS.length ? (
+                            <button onClick={handleNext} className="px-6 py-2.5 bg-indigo-600 rounded-xl text-white text-sm font-bold shadow-lg shadow-indigo-500/25">
+                                Next
+                            </button>
+                        ) : (
+                            <button onClick={handleSubmit} disabled={submitting} className="px-6 py-2.5 bg-emerald-600 rounded-xl text-white text-sm font-bold shadow-lg shadow-emerald-500/25 flex items-center gap-2">
+                                {submitting ? <><Loader2 size={15} className="animate-spin" /> saving…</> : <><Check size={15} /> {isEdit ? 'Save Changes' : 'Publish Listing'}</>}
+                            </button>
+                        )}
                     </div>
                 </div>
-
-                {/* Progress note */}
-                <p className="text-center text-[10px] text-slate-700 mt-6 font-medium">
-                    Step {step} of {STEPS.length} • Your progress is saved locally
-                </p>
             </div>
-
-            <style>{`
-                .custom-scroll::-webkit-scrollbar { width: 4px; }
-                .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-                .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
-            `}</style>
         </div>
     );
 };

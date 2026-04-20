@@ -69,5 +69,42 @@ export const productAPI = {
         } catch (error) {
             throw error.response?.data || error;
         }
+    },
+
+    /**
+     * Get a single product by ID
+     */
+    getProduct: async (productId) => {
+        try {
+            const response = await api.get(`${API_URL}/${productId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Update an existing product
+     */
+    updateProduct: async (productId, productData, imageFiles) => {
+        try {
+            const formData = new FormData();
+            formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
+            
+            if (imageFiles && imageFiles.length > 0) {
+                imageFiles.forEach(file => {
+                    formData.append('images', file);
+                });
+            }
+
+            const response = await api.put(`${API_URL}/${productId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     }
 };

@@ -32,8 +32,9 @@ const ITEMS_PER_PAGE = 6;
 
 const STATUS_CONFIG = {
     Published: { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', dot: 'bg-emerald-500' },
-    Draft: { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/25', dot: 'bg-amber-500' },
-    Inactive: { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/25', dot: 'bg-slate-500' },
+    Draft:     { color: 'text-amber-400', bg: 'bg-amber-500/10',   border: 'border-amber-500/25',   dot: 'bg-amber-500' },
+    Inactive:  { color: 'text-slate-400', bg: 'bg-slate-500/10',   border: 'border-slate-500/25',   dot: 'bg-slate-500' },
+    Sold:      { color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/25', dot: 'bg-indigo-500' },
 };
 
 const CATEGORY_STYLE = {
@@ -125,7 +126,7 @@ const StatusDropdown = ({ status, onChange, rowId, openId, setOpenId }) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full mt-2 left-0 w-36 bg-[#0a0a1f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-1 z-40"
+                        className="absolute top-full mt-2 left-0 w-44 bg-[#0a0a1f]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden py-1 z-40"
                     >
                         {['Published', 'Draft', 'Inactive'].map(s => {
                             const c = STATUS_CONFIG[s];
@@ -133,11 +134,11 @@ const StatusDropdown = ({ status, onChange, rowId, openId, setOpenId }) => {
                                 <button
                                     key={s}
                                     onClick={() => { onChange(s); setOpenId(null); }}
-                                    className={`w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${s === status ? `${c.color} ${c.bg}` : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                                    className={`w-full text-left flex items-center gap-2.5 px-4 py-3 text-[11px] font-black uppercase tracking-widest transition-colors ${s === status ? `${c.color} bg-white/5` : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                                 >
                                     <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
                                     {s}
-                                    {s === status && <CheckCircle size={10} className="ml-auto" />}
+                                    {s === status && <CheckCircle size={12} className="ml-auto" />}
                                 </button>
                             );
                         })}
@@ -178,12 +179,12 @@ const ActionMenu = ({ onEdit, onDelete, onPlaceAd, rowId, openId, setOpenId, men
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.92, y: initY }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute ${posClass} w-44 bg-[#0a0a1f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 py-1`}
+                        className={`absolute ${posClass} w-48 bg-[#0c0c24]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] z-50 py-1.5`}
                     >
                         <MenuItem icon={Edit3} label="Edit Product" color="text-slate-300" onClick={() => { onEdit(); setOpenId(null); }} />
                         <MenuItem icon={Megaphone} label="Place an Ad" color="text-indigo-400" onClick={() => { onPlaceAd(); setOpenId(null); }} />
-                        <div className="h-px bg-white/5 mx-3 my-1" />
-                        <MenuItem icon={Trash2} label="Delete" color="text-rose-400" onClick={() => { onDelete(); setOpenId(null); }} danger />
+                        <div className="h-px bg-white/5 mx-3 my-1.5" />
+                        <MenuItem icon={Trash2} label="Delete Product" color="text-rose-400" onClick={() => { onDelete(); setOpenId(null); }} danger />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -194,9 +195,9 @@ const ActionMenu = ({ onEdit, onDelete, onPlaceAd, rowId, openId, setOpenId, men
 const MenuItem = ({ icon: Icon, label, color, onClick, danger }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${danger ? 'text-rose-400 hover:bg-rose-500/10' : `${color} hover:bg-white/5 hover:text-white`}`}
+        className={`w-full flex items-center gap-3.5 px-4 py-3 text-[11px] font-bold transition-all ${danger ? 'text-rose-400 hover:bg-rose-500/10' : `${color} hover:bg-white/10 hover:text-white`}`}
     >
-        <Icon size={14} className={danger ? 'text-rose-400' : color} />
+        <Icon size={15} className={danger ? 'text-rose-400' : color} />
         {label}
     </button>
 );
@@ -375,7 +376,9 @@ const ProductsPage = () => {
                 name: p.name,
                 category: p.categoryName || 'Uncategorized',
                 startingBid: p.initialPrice,
-                status: p.status === 'CANCELED' ? 'Inactive' : p.status === 'ACTIVE' ? 'Published' : 'Draft',
+                status: p.status === 'CANCELED' ? 'Inactive' : 
+                        (p.status === 'ACTIVE' || p.status === 'SCHEDULED') ? 'Published' : 
+                        (p.status === 'SOLD' || p.status === 'PAYMENT_PENDING') ? 'Sold' : 'Draft',
                 backendStatus: p.status, // Keep original if needed
                 addedDate: p.addedDate ? new Date(p.addedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                 views: Math.floor(Math.random() * 500), // Placeholder stats
@@ -556,7 +559,7 @@ const ProductsPage = () => {
                 </div>
 
                 {/* ── Table ── */}
-                <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] overflow-hidden">
+                <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem]">
 
                     {/* Header Row */}
                     <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.04] bg-white/[0.01]">
@@ -604,12 +607,15 @@ const ProductsPage = () => {
                                             <div className={`w-10 h-10 rounded-xl flex-shrink-0 bg-gradient-to-br ${catStyle.gradient || 'from-slate-700 to-slate-900'} border border-white/5 flex items-center justify-center`}>
                                                 <Package size={14} className={catStyle.text} />
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-black text-white truncate group-hover:text-indigo-300 transition-colors">
+                                            <button
+                                                onClick={() => navigate(`/product/${product.id}`)}
+                                                className="min-w-0 text-left group/name"
+                                            >
+                                                <p className="text-xs font-black text-white truncate group-hover/name:text-indigo-400 transition-colors">
                                                     {product.name}
                                                 </p>
-                                                <p className="text-[9px] text-slate-600 font-medium mt-0.5">ID #{product.id.toString().padStart(4, '0')}</p>
-                                            </div>
+                                                <p className="text-[9px] text-slate-600 font-medium mt-0.5">ID #{product.id.toString().substring(0, 8)}...</p>
+                                            </button>
                                         </div>
 
                                         {/* Category */}
@@ -647,7 +653,7 @@ const ProductsPage = () => {
                                         <div className="col-span-1 flex justify-end">
                                             <ActionMenu
                                                 product={product}
-                                                onEdit={() => navigate(`/product/edit/${product.id}`)}
+                                                onEdit={() => navigate(`/product/${product.id}/update`)}
                                                 onDelete={() => setDeleteTarget(product)}
                                                 onPlaceAd={() => setAdProduct(product)}
                                                 rowId={product.id}

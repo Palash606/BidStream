@@ -103,6 +103,8 @@ const ProductDetailsPage = () => {
         </div>
     );
 
+    if (!product) return null;
+
     const type = AUCTION_TYPES[product.auctionType] || AUCTION_TYPES.TIMED;
     const stat = PRODUCT_STATUS[product.status] || PRODUCT_STATUS.DRAFT;
     const images = product.imageUrls || [];
@@ -136,18 +138,18 @@ const ProductDetailsPage = () => {
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                     </button>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
-                            onClick={() => navigate(`/product/edit/${product.id}`)}
-                            className="p-3 bg-white/[0.03] border border-white/10 rounded-xl hover:bg-white/[0.08] hover:border-white/20 text-slate-400 hover:text-white transition-all shadow-xl"
+                            onClick={() => navigate(`/product/${product.id}/update`)}
+                            className="flex items-center gap-2 px-6 py-3 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 text-slate-400 hover:text-white transition-all shadow-xl text-[11px] font-black uppercase tracking-widest"
                         >
-                            <Edit3 size={18} />
+                            <Edit3 size={16} /> Update Product
                         </button>
                         <button
                             onClick={handleDelete}
-                            className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl hover:bg-rose-500 hover:text-white text-rose-500 transition-all shadow-xl shadow-rose-500/5 hover:shadow-rose-500/20"
+                            className="flex items-center gap-2 px-6 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white text-rose-500 transition-all shadow-xl shadow-rose-500/5 hover:shadow-rose-500/20 text-[11px] font-black uppercase tracking-widest"
                         >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} /> Delete Listing
                         </button>
                     </div>
                 </div>
@@ -245,7 +247,9 @@ const ProductDetailsPage = () => {
                                 </div>
                                 <div className="space-y-1">
                                     <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Net Weight</span>
-                                    <p className="text-sm font-bold text-white">{product.weight ? `${product.weight} kg` : 'N/A'}</p>
+                                    <p className="text-sm font-bold text-white">
+                                        {product.weight ? (/^\d+(\.\d+)?$/.test(product.weight.toString()) ? `${product.weight}g` : product.weight) : 'N/A'}
+                                    </p>
                                 </div>
                             </div>
 
