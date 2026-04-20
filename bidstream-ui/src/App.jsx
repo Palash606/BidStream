@@ -13,6 +13,7 @@ import BidderDashboard from "./components/dashboard/BidderDashboard";
 import SellerVerification from "./components/dashboard/SellerVerification";
 import AddProductPage from "./pages/AddProductPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
 import ProductsPage from "./components/dashboard/seller/ProductsPage";
 import AnalyticsPage from "./components/dashboard/seller/AnalyticsPage";
 import OrdersPage from "./components/dashboard/seller/OrdersPage";
@@ -115,6 +116,11 @@ const MainContent = () => {
                 </ProtectedRoute>
             } />
             <Route path="/product/add" element={
+                <ProtectedRoute>
+                    {user?.isVerifiedSeller ? <AddProductPage /> : <Navigate to="/seller" replace />}
+                </ProtectedRoute>
+            } />
+            <Route path="/product/:id/update" element={
                 <ProtectedRoute>
                     {user?.isVerifiedSeller ? <AddProductPage /> : <Navigate to="/seller" replace />}
                 </ProtectedRoute>

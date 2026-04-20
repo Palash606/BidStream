@@ -26,7 +26,7 @@ public class Product {
     @ElementCollection
     private List<String> imageUrls;
 
-    private Double weight;
+    private String weight;
     private String dimensions;
     private String manufacturer;
 

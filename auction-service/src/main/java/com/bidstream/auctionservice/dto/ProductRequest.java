@@ -21,7 +21,7 @@ public class ProductRequest {
     @NotBlank(message = "Category is required")
     private String categoryName;
     
-    private Double weight;
+    private String weight;
     private String dimensions;
     private String manufacturer;
     

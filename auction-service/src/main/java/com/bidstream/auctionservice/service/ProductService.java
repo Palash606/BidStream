@@ -144,7 +144,9 @@ public class ProductService {
         if (!existing.getSellerId().equals(sellerId)) {
             throw new RuntimeException("You are not authorized to update this product");
         }
-        if (existing.getStatus() != ProductStatus.DRAFT && existing.getStatus() != ProductStatus.SCHEDULED) {
+        if (existing.getStatus() != ProductStatus.DRAFT && 
+            existing.getStatus() != ProductStatus.SCHEDULED && 
+            existing.getStatus() != ProductStatus.ACTIVE) {
             throw new RuntimeException("Product cannot be updated while in status: " + existing.getStatus());
         }
 
@@ -229,6 +231,12 @@ public class ProductService {
             case "END_TIME" -> ProductStatus.SCHEDULED;
             default -> ProductStatus.DRAFT;
         };
+    }
+
+    @Transactional(readOnly = true)
+    public Product getProductById(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
     }
 
     /**
