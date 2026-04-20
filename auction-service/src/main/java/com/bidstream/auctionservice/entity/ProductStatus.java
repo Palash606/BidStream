@@ -7,5 +7,6 @@ public enum ProductStatus {
     PAYMENT_PENDING,
     SOLD,
     UNSOLD,
-    CANCELED
+    CANCELED,
+    DELETED
 }
