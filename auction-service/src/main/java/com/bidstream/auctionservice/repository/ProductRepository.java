@@ -16,11 +16,11 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
-    Page<Product> findBySellerId(UUID sellerId, Pageable pageable);
+    Page<Product> findBySellerIdAndStatusNotIn(UUID sellerId, List<ProductStatus> statuses, Pageable pageable);
 
-    List<Product> findBySellerIdAndCategoryId(UUID sellerId, Long categoryId);
+    List<Product> findBySellerIdAndCategoryIdAndStatusNotIn(UUID sellerId, Long categoryId, List<ProductStatus> statuses);
 
-    Page<Product> findBySellerIdAndCategoryId(UUID sellerId, Long categoryId, Pageable pageable);
+    Page<Product> findBySellerIdAndCategoryIdAndStatusNotIn(UUID sellerId, Long categoryId, List<ProductStatus> statuses, Pageable pageable);
 
     List<Product> findBySellerIdAndCategoryIdAndStatus(UUID sellerId, Long categoryId, ProductStatus status);
 

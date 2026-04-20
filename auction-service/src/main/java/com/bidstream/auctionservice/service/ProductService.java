@@ -125,7 +125,7 @@ public class ProductService {
         if (!existing.getSellerId().equals(sellerId)) {
             throw new RuntimeException("You are not authorized to delete this product");
         }
-        existing.setStatus(ProductStatus.CANCELED);
+        existing.setStatus(ProductStatus.DELETED);
         productRepository.save(existing);
     }
 
@@ -211,14 +211,16 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> getSellerProducts(UUID sellerId, Long categoryId, ProductStatus status, Pageable pageable) {
+        List<ProductStatus> excludedStatuses = List.of(ProductStatus.DELETED, ProductStatus.CANCELED);
+        
         if (categoryId != null && status != null) {
             return productRepository.findBySellerIdAndCategoryIdAndStatus(sellerId, categoryId, status, pageable);
         } else if (categoryId != null) {
-            return productRepository.findBySellerIdAndCategoryId(sellerId, categoryId, pageable);
+            return productRepository.findBySellerIdAndCategoryIdAndStatusNotIn(sellerId, categoryId, excludedStatuses, pageable);
         } else if (status != null) {
             return productRepository.findBySellerIdAndStatus(sellerId, status, pageable);
         }
-        return productRepository.findBySellerId(sellerId, pageable);
+        return productRepository.findBySellerIdAndStatusNotIn(sellerId, excludedStatuses, pageable);
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
