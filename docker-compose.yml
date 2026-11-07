@@ -24,7 +24,8 @@ services:
     ports:
       - "6379:6379"
     env_file:
-      - .env.local
+      - path: .env.local
+        required: false
 
 volumes:
   postgres_data:

@@ -1,0 +1,89 @@
+name: 🚀 BidStream Continuous Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ==========================================
+  # 1. Java Microservices Matrix Build
+  # ==========================================
+  backend-services:
+    name: Backend / ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - eureka-server
+          - api-gateway
+          - identity-service
+          - auction-service
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: 🔨 Compile and Test (${{ matrix.service }})
+        working-directory: ${{ matrix.service }}
+        run: mvn -B clean test-compile
+
+  # ==========================================
+  # 2. React / Vite Frontend Build
+  # ==========================================
+  frontend-ui:
+    name: Frontend / bidstream-ui
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bidstream-ui
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'bidstream-ui/package-lock.json'
+
+      - name: 📦 Install npm dependencies
+        run: npm ci
+
+      - name: 🏗️ Build production bundle
+        run: npm run build
+
+  # ==========================================
+  # 3. Docker Compose Infrastructure Validation
+  # ==========================================
+  docker-validation:
+    name: Infrastructure / docker-compose validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup environment configuration
+        run: cp .env.example .env.local
+
+      - name: 🐳 Validate Docker Compose configuration
+        run: docker compose -f docker-compose.yml config --quiet

@@ -1,0 +1,67 @@
+name: 🐛 Bug Report
+description: Report an issue, unexpected behavior, or error in BidStream
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please search existing issues before submitting to avoid duplicates.
+  - type: dropdown
+    id: service
+    attributes:
+      label: Affected Component / Service
+      description: Which service or module does this bug occur in?
+      options:
+        - "api-gateway (Port 8080)"
+        - "eureka-server (Port 8761)"
+        - "identity-service (Port 8081)"
+        - "auction-service (Port 8082)"
+        - "bidstream-ui (Port 5173)"
+        - "infrastructure (Docker / Postgres / Redis)"
+        - "Other / Multiple"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened and why it is incorrect...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Start infrastructure via `docker-compose up -d`
+        2. Run `full-clean-boot.sh`
+        3. Navigate to `http://localhost:5173`
+        4. Place bid of ₹...
+        5. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: The bid should be accepted and broadcast via STOMP within 100ms.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or Console Output
+      description: Paste relevant log snippets or browser console output (DO NOT paste secrets/passwords).
+      render: shell
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Info
+      description: OS version, Java version (`java -version`), Node version (`node -v`).
+      placeholder: macOS Sequoia, OpenJDK 21.0.2, Node 20.10.0, Docker Desktop 4.28
+    validations:
+      required: false
