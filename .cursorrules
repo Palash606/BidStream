@@ -1,0 +1,99 @@
+# BidStream AI Assistant & Developer Guidelines (.cursorrules)
+
+You are an expert distributed systems engineer and senior full-stack developer assisting with **BidStream**, a real-time, event-driven distributed auction platform built on Spring Boot microservices, Redisson distributed locks, PostgreSQL, Redis, and React 19.
+
+Follow these strict project standards when writing, modifying, or reviewing code:
+
+---
+
+## 1. Core Architecture & Tech Stack
+
+- **Backend**: Java 21, Spring Boot 3.4+, Spring Cloud 2024 (Eureka, Gateway, OpenFeign), Spring Security, Spring Data JPA.
+- **Real-Time & Distributed Tier**: Redisson (Distributed Locks), Redis 7 (Pub/Sub, Session Store, Atomic Counters), STOMP over WebSockets.
+- **Frontend**: React 19, Vite, Tailwind CSS, Zustand, Lucide React, StompJS/SockJS.
+- **Database**: PostgreSQL 15 (Polyglot isolation: `identity_db` and `auction_db`).
+
+---
+
+## 2. Distributed Concurrency & Race Condition Rules
+
+1. **Locking Standard**:
+   - ANY operation that reads and modifies an active auction price, places a bid, or closes an auction MUST use a Redisson distributed lock (`RLock`):
+     ```java
+     RLock lock = redissonClient.getLock("bid-lock:" + productId);
+     try {
+         if (lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+             // 1. Validate auction state (ACTIVE)
+             // 2. Validate bidder != seller (anti-self-bidding)
+             // 3. Validate bid amount >= (currentHighestBid + minIncrement)
+             // 4. Update highest bid & winner
+             // 5. Reset countdown timer in Redis
+         }
+     } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         throw new RuntimeException("Bid operation interrupted", e);
+     } finally {
+         if (lock.isHeldByCurrentThread()) {
+             lock.unlock();
+         }
+     }
+     ```
+2. **Lock Release Discipline**:
+   - Always unlock in a `finally` block with `if (lock.isHeldByCurrentThread()) lock.unlock();`.
+   - Never hold a lock across external HTTP network calls or blocking email sends.
+3. **Idempotency**:
+   - All event listeners, webhook endpoints, and payment callbacks MUST be strictly idempotent.
+
+---
+
+## 3. Java & Spring Boot Guidelines
+
+1. **Java 21 Standards**:
+   - Use `record` for immutable DTOs, request payloads, and event messages.
+   - Use pattern matching for `switch` and `instanceof`.
+   - Avoid legacy synchronized blocks; rely on Redis distributed primitives or atomic types.
+2. **Dependency Injection**:
+   - Prefer constructor injection via Lombok `@RequiredArgsConstructor(onConstructor_ = @Autowired)` or explicit constructors over `@Autowired` on fields.
+3. **DTO & Domain Separation**:
+   - NEVER expose JPA entities directly in REST controllers. Always map to and from DTOs.
+   - Validate incoming requests using Jakarta annotations (`@NotNull`, `@NotBlank`, `@Positive`, `@Email`).
+4. **Error Handling**:
+   - Throw domain-specific exceptions.
+   - Handle exceptions in `@RestControllerAdvice` returning structured error schemas (`timestamp`, `status`, `error`, `message`, `path`).
+
+---
+
+## 4. Security Axioms
+
+1. **Zero Secret Leakage**:
+   - NEVER hardcode secrets, passwords, tokens, or private keys in source code.
+   - All credentials must be injected via environment variables (`${DB_PASSWORD}`, `${JWT_SECRET}`).
+2. **Session Enforcement**:
+   - BidStream enforces a single active session per user. Look up active sessions in Redis before trusting long-lived claims.
+3. **Anti-Self-Bidding**:
+   - Always enforce `bidder_id != product.seller_id` both on the frontend UI and in `BidService.placeBid(...)`. Return `403 Forbidden` if violated.
+4. **WebSocket Security**:
+   - Verify JWT in the WebSocket handshake. Validate user authorization before allowing subscription to `/topic/auction/{lotId}`.
+
+---
+
+## 5. Frontend & UI Guidelines (React 19 / Vite)
+
+1. **State Management**:
+   - Use Zustand for global application state (`useAuthStore`, `useAuctionStore`).
+   - Store access tokens in `localStorage` and memory; synchronize state upon role-switching.
+2. **Component Structure**:
+   - Clean, modular functional components.
+   - Extract complex UI cards and live ticker components into dedicated files in `src/components/`.
+3. **Tailwind CSS**:
+   - Maintain modern, high-contrast dark/light styling with consistent spacing, smooth transitions, and glassmorphism.
+4. **WebSocket Lifecycles**:
+   - Always cleanly unsubscribe and disconnect STOMP subscriptions on component unmount to prevent memory leaks and ghost subscriptions.
+
+---
+
+## 6. Code Hygiene & Review Discipline
+
+- Write unit/integration tests for any added business logic.
+- Keep commits aligned with Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`).
+- Document non-trivial architectural decisions with inline comments explaining *why*, not just *what*.
