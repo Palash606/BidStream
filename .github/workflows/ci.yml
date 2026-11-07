@@ -40,13 +40,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🔧 Grant execute permission for Maven Wrapper
-        working-directory: ${{ matrix.service }}
-        run: chmod +x mvnw
-
       - name: 🔨 Compile and Test (${{ matrix.service }})
         working-directory: ${{ matrix.service }}
-        run: ./mvnw -B clean test-compile
+        run: mvn -B clean test-compile
 
   # ==========================================
   # 2. React / Vite Frontend Build
