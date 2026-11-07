@@ -82,5 +82,8 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v4
 
+      - name: ⚙️ Setup environment configuration
+        run: cp .env.example .env.local
+
       - name: 🐳 Validate Docker Compose configuration
         run: docker compose -f docker-compose.yml config --quiet
