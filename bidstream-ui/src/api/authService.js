@@ -45,8 +45,9 @@ export const authService = {
         return await api.post(`/auth/reset-password?token=${token}&newPassword=${newPassword}`);
     },
 
-    switchRole: async (email, role) => {
-        return await api.post(`/auth/switch-role?email=${email}&role=${role}`);
+    switchRole: async (email, role, interests = []) => {
+        const interestsParam = interests.length > 0 ? `&interests=${interests.join(',')}` : '';
+        return await api.post(`/auth/switch-role?email=${email}&role=${role}${interestsParam}`);
     },
 
     updateRole: async (role) => {

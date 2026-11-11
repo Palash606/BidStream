@@ -17,4 +17,5 @@ public class UserDTO {
     private String lastName;
     @com.fasterxml.jackson.annotation.JsonProperty("isVerifiedSeller")
     private boolean verifiedSeller;
+    private java.util.List<String> interests;
 }

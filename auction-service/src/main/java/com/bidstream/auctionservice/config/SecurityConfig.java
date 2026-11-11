@@ -37,7 +37,9 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers("/api/products/search/**", "/api/categories",
                                                                 "/api/categories/all",
-                                                                "/images/**")
+                                                                "/images/**",
+                                                                "/ws-auction",
+                                                                "/ws-auction/**")
                                                 .permitAll()
                                                 // Allow both ADMIN and SELLER to add categories
                                                 .requestMatchers("/api/categories/add").hasAnyRole("ADMIN")

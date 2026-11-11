@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Table(name = "product", indexes = {
+        @Index(name = "idx_product_status_endtime", columnList = "status, auction_end_time"),
+        @Index(name = "idx_product_seller_id", columnList = "seller_id")
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,6 +38,7 @@ public class Product {
     private Category category;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private ProductStatus status = ProductStatus.DRAFT;
 
     private LocalDateTime auctionEndTime;

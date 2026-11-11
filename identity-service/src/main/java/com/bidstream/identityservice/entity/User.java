@@ -55,17 +55,27 @@ public class User implements UserDetails {
     private UserRole lastActiveRole = UserRole.ROLE_SELECTION_PENDING;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private UserState currentState = UserState.IDLE;
 
+    @Builder.Default
     private boolean isVerified = false;
+    @Builder.Default
     private boolean isVerifiedSeller = false;
     
     @Column(unique = true, updatable = false)
     private String providerId;
 
+    @Builder.Default
     private int failedLoginAttempts = 0;
+    @Builder.Default
     private int failedOtpAttempts = 0;
     private LocalDateTime lockoutUntil;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_interests", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "interest")
+    private List<String> interests;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

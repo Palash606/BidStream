@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "bid", indexes = {
+        @Index(name = "idx_bid_product_amount", columnList = "product_id, amount DESC"),
+        @Index(name = "idx_bid_bidder_id", columnList = "bidder_id")
+})
 @Data
 @Builder
 @NoArgsConstructor

@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { productAPI } from '../api/product';
 import { toast } from 'react-hot-toast';
+import BidConsole from '../components/auction/BidConsole';
+import { useAuthStore } from '../stores/useAuthStore';
 
 // ─── Helpers & Constants ───────────────────────────────────────────────────
 
@@ -30,6 +32,7 @@ const fmt = (n) => n?.toLocaleString('en-IN') || '0';
 const ProductDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const user = useAuthStore((state) => state.user);
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeImgIdx, setActiveImgIdx] = useState(0);
@@ -37,14 +40,31 @@ const ProductDetailsPage = () => {
     const [analyzing, setAnalyzing] = useState(false);
     const [insights, setInsights] = useState(null);
 
+    const isSeller = user?.activeRole === 'SELLER' || user?.activeRole === 'ROLE_SELLER';
+    const isOwner = Boolean(
+        user && product && (
+            user.userId === product.sellerId ||
+            user.email === product.sellerId ||
+            user.roles?.includes('ROLE_ADMIN')
+        )
+    );
+
+    const handleBack = () => {
+        if (window.history.length > 2) {
+            navigate(-1);
+        } else {
+            navigate(isSeller ? '/products' : '/');
+        }
+    };
+
     useEffect(() => {
         const loadProduct = async () => {
             try {
                 const data = await productAPI.getProduct(id);
                 setProduct(data);
-            } catch (err) {
+            } catch {
                 toast.error('Product not found');
-                navigate('/products');
+                handleBack();
             } finally {
                 setLoading(false);
             }
@@ -91,8 +111,8 @@ const ProductDetailsPage = () => {
         try {
             await productAPI.deleteProduct(id);
             toast.success('Deleted permanently');
-            navigate('/products');
-        } catch (err) {
+            handleBack();
+        } catch {
             toast.error('Failed to delete');
         }
     };
@@ -132,26 +152,28 @@ const ProductDetailsPage = () => {
                 {/* ── Navigation ── */}
                 <div className="flex items-center justify-between mb-10">
                     <button
-                        onClick={() => navigate('/products')}
-                        className="group flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-all"
+                        onClick={handleBack}
+                        className="group flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-all cursor-pointer"
                     >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back
                     </button>
 
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate(`/product/${product.id}/update`)}
-                            className="flex items-center gap-2 px-6 py-3 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 text-slate-400 hover:text-white transition-all shadow-xl text-[11px] font-black uppercase tracking-widest"
-                        >
-                            <Edit3 size={16} /> Update Product
-                        </button>
-                        <button
-                            onClick={handleDelete}
-                            className="flex items-center gap-2 px-6 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white text-rose-500 transition-all shadow-xl shadow-rose-500/5 hover:shadow-rose-500/20 text-[11px] font-black uppercase tracking-widest"
-                        >
-                            <Trash2 size={16} /> Delete Listing
-                        </button>
-                    </div>
+                    {isOwner && (
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => navigate(`/product/${product.id}/update`)}
+                                className="flex items-center gap-2 px-6 py-3 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 text-slate-400 hover:text-white transition-all shadow-xl text-[11px] font-black uppercase tracking-widest cursor-pointer"
+                            >
+                                <Edit3 size={16} /> Update Product
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex items-center gap-2 px-6 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white text-rose-500 transition-all shadow-xl shadow-rose-500/5 hover:shadow-rose-500/20 text-[11px] font-black uppercase tracking-widest cursor-pointer"
+                            >
+                                <Trash2 size={16} /> Delete Listing
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -273,6 +295,14 @@ const ProductDetailsPage = () => {
                                         <p className="text-[9px] text-amber-500/60 font-black uppercase">Expert Valued</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Live Interactive Bidding Arena */}
+                            <div className="pt-6 border-t border-white/5">
+                                <BidConsole
+                                    product={product}
+                                    onPriceUpdate={(newPrice) => setProduct(prev => ({ ...prev, currentHighestBid: newPrice }))}
+                                />
                             </div>
 
                             {/* BidBuddy AI Experience */}

@@ -121,9 +121,12 @@ public class AuthController {
     }
 
     @PostMapping("/switch-role")
-    public ResponseEntity<?> switchRole(@RequestParam String email, @RequestParam String role) {
+    public ResponseEntity<?> switchRole(
+            @RequestParam String email,
+            @RequestParam String role,
+            @RequestParam(required = false) List<String> interests) {
         try {
-            Map<String, Object> response = registrationService.switchRole(email, role);
+            Map<String, Object> response = registrationService.switchRole(email, role, interests);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -194,7 +197,8 @@ public class AuthController {
                 "phoneNumber", user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName(),
-                "isVerifiedSeller", user.isVerifiedSeller()
+                "isVerifiedSeller", user.isVerifiedSeller(),
+                "interests", user.getInterests() != null ? user.getInterests() : List.of()
         ));
     }
 }

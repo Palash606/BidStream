@@ -106,5 +106,60 @@ export const productAPI = {
         } catch (error) {
             throw error.response?.data || error;
         }
+    },
+
+    /**
+     * Get discovery data (recommended, ending soon, live)
+     */
+    getDiscoveryData: async () => {
+        try {
+            const response = await api.get(`${API_URL}/discovery`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Search products
+     */
+    search: async (query, categoryId = null, signal = null) => {
+        try {
+            let url = `${API_URL}/search?q=${query}`;
+            if (categoryId) url += `&categoryId=${categoryId}`;
+            const response = await api.get(url, { signal });
+            return response.data;
+        } catch (error) {
+            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+                return null;
+            }
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Place a bid on a product
+     */
+    placeBid: async (productId, amount) => {
+        try {
+            const response = await api.post('/api/bids/place', null, {
+                params: { productId, amount }
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Get bid history for a product
+     */
+    getBidHistory: async (productId) => {
+        try {
+            const response = await api.get(`/api/bids/history/${productId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     }
 };
