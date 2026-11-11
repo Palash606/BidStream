@@ -32,11 +32,15 @@ public class RegistrationService {
     }
 
     @Transactional
-    public Map<String, Object> switchRole(String email, String targetRole) {
+    public Map<String, Object> switchRole(String email, String targetRole, List<String> interests) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         System.out.println("Processing SwitchRole for " + email + " to " + targetRole);
+        if (interests != null) {
+            System.out.println("Saving interests: " + interests);
+            user.setInterests(interests);
+        }
         
         // Robust role normalization
         String normalizedRole = targetRole.toUpperCase();
@@ -60,6 +64,12 @@ public class RegistrationService {
             UserRole newRole = UserRole.valueOf(enumLookup);
             user.setRole(newRole);
             user.setLastActiveRole(newRole);
+            
+            // Auto-verify if switching to SELLER role (for demo auto-approval)
+            if (newRole == UserRole.SELLER) {
+                user.setVerifiedSeller(true);
+            }
+            
             userRepository.save(user);
 
             // Generate new tokens with the updated role

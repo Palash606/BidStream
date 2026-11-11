@@ -50,6 +50,12 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
                                         @Param("endDate") LocalDateTime endDate);
 
     List<Product> findByWinnerIdAndStatusIn(UUID winnerId, List<ProductStatus> statuses);
+    
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.auctionEndTime BETWEEN :now AND :soon ORDER BY p.auctionEndTime ASC")
+    List<Product> findEndingSoon(@Param("now") LocalDateTime now, @Param("soon") LocalDateTime soon);
+
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.category.name IN :categories")
+    List<Product> findByCategoryNames(@Param("categories") List<String> categories);
 
     @Query("SELECT p FROM Product p WHERE p.auctionEndTime <= :now AND p.status = :status")
     List<Product> findExpiredActiveAuctions(

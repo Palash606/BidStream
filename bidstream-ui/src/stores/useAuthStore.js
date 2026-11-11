@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { authAPI } from '../api/auth';
+import { authService } from '../api/authService';
 
 /**
  * Parse JWT token to extract user information
@@ -147,17 +148,33 @@ export const useAuthStore = create(
                     return;
                 }
 
-                // Update backend
-                await authAPI.switchRole(user.email, newRole);
+                try {
+                    // Update backend and get new tokens
+                    const response = await authService.switchRole(user.email, newRole);
+                    const { accessToken, refreshToken } = response.data;
 
-                // Update local state ONLY on success
-                set({
-                    user: {
-                        ...user,
-                        activeRole: newRole
+                    // Update storage
+                    localStorage.setItem('accessToken', accessToken);
+                    if (refreshToken) {
+                        localStorage.setItem('refreshToken', refreshToken);
                     }
-                });
-                return { success: true };
+
+                    // Update local state with the new user data from the new token
+                    const updatedUser = getUserFromToken(accessToken);
+                    set({
+                        user: {
+                            ...updatedUser,
+                            activeRole: newRole // Ensure the activeRole matches the requested switch
+                        },
+                        accessToken,
+                        refreshToken
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    console.error('Role switch failed:', error);
+                    throw error;
+                }
             },
 
             /**

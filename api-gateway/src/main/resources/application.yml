@@ -35,6 +35,12 @@ spring:
             - Path=/api/**,/images/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+        - id: auction-service-ws
+          uri: lb:ws://auction-service
+          predicates:
+            - Path=/ws-auction, /ws-auction/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
 
 eureka:
   instance:

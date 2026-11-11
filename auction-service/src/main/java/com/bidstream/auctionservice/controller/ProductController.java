@@ -33,6 +33,9 @@ public class ProductController {
     private ProductSearchService searchService;
 
     @Autowired
+    private com.bidstream.auctionservice.service.DiscoveryService discoveryService;
+
+    @Autowired
     private ProductRepository productRepository;
 
     @Autowired
@@ -137,14 +140,21 @@ public class ProductController {
         UUID sellerId = securityUtils.getAuthenticatedUserId(authHeader);
         return ResponseEntity.ok(productService.getSellerProducts(sellerId, categoryId, status, pageable));
     }
+    @GetMapping("/discovery")
+    public ResponseEntity<java.util.Map<String, List<Product>>> getDiscoveryData(
+            @RequestHeader("Authorization") String authHeader) {
+        UUID userId = securityUtils.getAuthenticatedUserId(authHeader);
+        return ResponseEntity.ok(discoveryService.getDiscoveryData(userId));
+    }
 
     @GetMapping("/search")
     public ResponseEntity<List<Product>> search(
-            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("Authorization") String authHeader,
             @RequestParam String q,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice) {
+        UUID userId = securityUtils.getAuthenticatedUserId(authHeader);
         return ResponseEntity.ok(searchService.globalSearch(userId, q, categoryId, minPrice, maxPrice));
     }
 

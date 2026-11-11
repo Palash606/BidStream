@@ -37,6 +37,10 @@ npm-debug.log*
 Thumbs.db
 *.log
 
+# --- Uploads & Temporary Media ---
+uploads/
+**/uploads/
+
 # --- Maven Wrapper ---
 .mvn/
 !**/src/main/**/target/

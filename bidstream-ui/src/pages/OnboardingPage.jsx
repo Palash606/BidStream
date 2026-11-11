@@ -47,6 +47,21 @@ const OnboardingPage = () => {
         { id: 'ready', title: 'Let\'s Roll' }
     ];
 
+    const getTheme = () => {
+        const isBidder = selectedRole === 'BIDDER';
+        return {
+            primary: isBidder ? 'purple' : 'blue',
+            gradient: isBidder ? 'from-purple-600 to-fuchsia-600' : 'from-blue-600 to-indigo-600',
+            button: isBidder ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-500/25' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/25',
+            cardSelected: isBidder ? 'bg-purple-600/20 border-purple-500' : 'bg-blue-600/20 border-blue-500',
+            icon: isBidder ? 'text-purple-400' : 'text-blue-400',
+            indicator: isBidder ? 'border-purple-500 bg-purple-500' : 'border-blue-500 bg-blue-500',
+            blob: isBidder ? 'bg-purple-600/20' : 'bg-blue-600/20'
+        };
+    };
+
+    const theme = getTheme();
+
     const paginate = (newDirection) => {
         // Since no back button strictly, we only ever go forward (1).
         if (newDirection === 1 && page < slides.length - 1) {
@@ -65,8 +80,8 @@ const OnboardingPage = () => {
         setLoading(true);
         const toastId = toast.loading('Finalizing your account...');
         try {
-            // Send the chosen role
-            const res = await authService.switchRole(user.email, selectedRole);
+            // Send the chosen role and interests
+            const res = await authService.switchRole(user.email, selectedRole, selectedCategories);
 
             // The backend issues brand new JWT tokens containing the finalized role
             // We must save these so the role persists across page refreshes
@@ -104,14 +119,14 @@ const OnboardingPage = () => {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden text-white font-sans">
             {/* Background Animations */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
+            <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] ${theme.blob} blur-[120px] rounded-full mix-blend-screen pointer-events-none transition-colors duration-1000`} />
+            <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] ${selectedRole ? theme.blob : 'bg-purple-600/20'} blur-[120px] rounded-full mix-blend-screen pointer-events-none transition-colors duration-1000`} />
 
             {/* Progress Bar Header */}
             <div className="absolute top-0 left-0 w-full p-6 flex items-center justify-center z-50">
                 <div className="w-full max-w-2xl bg-slate-800/50 h-2 rounded-full overflow-hidden backdrop-blur-md">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                        className={`h-full bg-gradient-to-r ${theme.gradient}`}
                         initial={{ width: '0%' }}
                         animate={{ width: `${((page + 1) / slides.length) * 100}%` }}
                         transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -230,12 +245,12 @@ const OnboardingPage = () => {
                                 <div className="grid grid-cols-2 gap-6 mb-10">
                                     <button
                                         onClick={() => setSelectedRole('BIDDER')}
-                                        className={`relative group p-8 border rounded-3xl transition-all overflow-hidden ${selectedRole === 'BIDDER' ? 'bg-blue-600/20 border-blue-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
+                                        className={`relative group p-8 border rounded-3xl transition-all overflow-hidden ${selectedRole === 'BIDDER' ? 'bg-purple-600/20 border-purple-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
                                     >
-                                        <div className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'BIDDER' ? 'border-blue-500 bg-blue-500' : 'border-slate-600'}`}>
+                                        <div className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'BIDDER' ? 'border-purple-500 bg-purple-500' : 'border-slate-600'}`}>
                                             {selectedRole === 'BIDDER' && <div className="w-2 h-2 rounded-full bg-white" />}
                                         </div>
-                                        <Gavel className={`w-16 h-16 mx-auto mb-4 ${selectedRole === 'BIDDER' ? 'text-blue-400' : 'text-slate-400'}`} />
+                                        <Gavel className={`w-16 h-16 mx-auto mb-4 ${selectedRole === 'BIDDER' ? 'text-purple-400' : 'text-slate-400'}`} />
                                         <h3 className="text-2xl font-bold mb-2">Bidder</h3>
                                         <p className="text-sm text-slate-400 leading-relaxed">
                                             Discover rare items, place live bids, and win auctions instantly.
@@ -244,12 +259,12 @@ const OnboardingPage = () => {
 
                                     <button
                                         onClick={() => setSelectedRole('SELLER')}
-                                        className={`relative group p-8 border rounded-3xl transition-all overflow-hidden ${selectedRole === 'SELLER' ? 'bg-indigo-600/20 border-indigo-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
+                                        className={`relative group p-8 border rounded-3xl transition-all overflow-hidden ${selectedRole === 'SELLER' ? 'bg-blue-600/20 border-blue-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
                                     >
-                                        <div className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'SELLER' ? 'border-indigo-500 bg-indigo-500' : 'border-slate-600'}`}>
+                                        <div className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'SELLER' ? 'border-blue-500 bg-blue-500' : 'border-slate-600'}`}>
                                             {selectedRole === 'SELLER' && <div className="w-2 h-2 rounded-full bg-white" />}
                                         </div>
-                                        <Store className={`w-16 h-16 mx-auto mb-4 ${selectedRole === 'SELLER' ? 'text-indigo-400' : 'text-slate-400'}`} />
+                                        <Store className={`w-16 h-16 mx-auto mb-4 ${selectedRole === 'SELLER' ? 'text-blue-400' : 'text-slate-400'}`} />
                                         <h3 className="text-2xl font-bold mb-2">Seller</h3>
                                         <p className="text-sm text-slate-400 leading-relaxed">
                                             List items, manage auctions, and reach thousands of daily buyers.
@@ -260,7 +275,7 @@ const OnboardingPage = () => {
                                 <button
                                     disabled={!selectedRole}
                                     onClick={() => paginate(1)}
-                                    className={`w-full py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${selectedRole ? 'bg-white text-slate-900 hover:bg-slate-200 shadow-lg shadow-white/20' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+                                    className={`w-full py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${selectedRole ? `bg-white text-slate-900 hover:bg-slate-200 shadow-lg shadow-white/20` : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
                                 >
                                     Continue
                                 </button>
@@ -274,13 +289,13 @@ const OnboardingPage = () => {
                                 <p className="text-slate-400 mb-8">Select categories so we can personalize your feed.</p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                                    {['Electronics', 'Fashion', 'Motors', 'Art & Antiques', 'Real Estate', 'Jewelry', 'Sports', 'Gaming', 'Collectibles'].map((cat) => {
+                                    {['Watches', 'Art', 'Jewellery', 'Collectibles', 'Automobiles', 'Electronics', 'Currency', 'Furniture', 'Fashion', 'Instruments', 'Books', 'Wine', 'Other'].map((cat) => {
                                         const isSelected = selectedCategories.includes(cat);
                                         return (
                                             <button
                                                 key={cat}
                                                 onClick={() => toggleCategory(cat)}
-                                                className={`p-4 border rounded-xl transition-all text-sm font-medium ${isSelected ? 'bg-purple-600/20 border-purple-500 text-purple-300' : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-purple-500/50'}`}
+                                                className={`p-4 border rounded-xl transition-all text-sm font-medium ${isSelected ? `${theme.cardSelected} ${theme.text}` : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500/50'}`}
                                             >
                                                 {cat}
                                             </button>
@@ -295,7 +310,7 @@ const OnboardingPage = () => {
                                     <button
                                         onClick={() => paginate(1)}
                                         disabled={selectedCategories.length === 0}
-                                        className={`w-2/3 py-4 font-bold rounded-xl transition-all shadow-lg ${selectedCategories.length > 0 ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-purple-500/25' : 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'}`}
+                                        className={`w-2/3 py-4 font-bold rounded-xl transition-all shadow-lg ${selectedCategories.length > 0 ? `${theme.button} text-white` : 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'}`}
                                     >
                                         Continue {selectedCategories.length > 0 && `(${selectedCategories.length})`}
                                     </button>
@@ -316,7 +331,7 @@ const OnboardingPage = () => {
                                         repeat: Infinity,
                                         ease: "easeInOut"
                                     }}
-                                    className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center relative shadow-2xl shadow-indigo-500/30"
+                                    className={`w-32 h-32 mx-auto mb-8 bg-gradient-to-br ${theme.gradient} rounded-full flex items-center justify-center relative shadow-2xl ${selectedRole === 'BIDDER' ? 'shadow-purple-500/30' : 'shadow-blue-500/30'}`}
                                 >
                                     <div className="absolute inset-2 border-2 border-white/20 rounded-full border-dashed animate-spin-slow"></div>
                                     <User className="w-16 h-16 text-white" />
@@ -328,10 +343,10 @@ const OnboardingPage = () => {
 
                                 <button
                                     onClick={handleRoleSelection}
-                                    className="relative overflow-hidden w-full group py-5 bg-white text-slate-900 font-black text-lg rounded-2xl transition-transform hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/10"
+                                    className={`relative overflow-hidden w-full group py-5 bg-white text-slate-900 font-black text-lg rounded-2xl transition-transform hover:scale-[1.02] active:scale-95 shadow-2xl ${selectedRole === 'BIDDER' ? 'shadow-purple-500/20' : 'shadow-blue-500/20'}`}
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2">Let's Roll <ArrowRight className="group-hover:translate-x-1 transition-transform" /></span>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-slate-100 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className={`absolute inset-0 bg-gradient-to-r ${theme.gradient} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
                                 </button>
                             </div>
                         )}
