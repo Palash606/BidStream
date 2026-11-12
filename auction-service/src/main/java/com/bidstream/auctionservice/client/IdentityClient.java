@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
-@FeignClient(name = "identity-service", configuration = FeignConfig.class)
+@FeignClient(name = "identity-service", configuration = FeignConfig.class, fallbackFactory = IdentityClientFallback.class)
 public interface IdentityClient {
     @GetMapping("/auth/user-details")
     UserDTO getUserDetails(@RequestParam UUID userId);

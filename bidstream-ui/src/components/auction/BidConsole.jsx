@@ -37,7 +37,9 @@ const BidConsole = ({ product, onPriceUpdate }) => {
     const [submitting, setSubmitting] = useState(false);
     const [gavelEvent, setGavelEvent] = useState(null);
     const [wsConnected, setWsConnected] = useState(false);
+    const [winnerModal, setWinnerModal] = useState(false);
     const stompClientRef = useRef(null);
+    const audioCtxRef = useRef(null);
 
     const minIncrement = calculateMinIncrement(currentPrice);
     const minNextBid = currentPrice + minIncrement;
@@ -67,6 +69,112 @@ const BidConsole = ({ product, onPriceUpdate }) => {
         fetchHistory();
         return () => { isMounted = false; };
     }, [product.id]);
+
+    // ── Feature 1: Web Audio Gavel Strikes ──────────────────────────────────
+    const getAudioCtx = () => {
+        if (!audioCtxRef.current) {
+            audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtxRef.current;
+    };
+
+    const playGavelStrike = (stage, delayOffset = 0) => {
+        try {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime + delayOffset;
+
+            if (stage === 'GOING_ONCE') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.linearRampToValueAtTime(220, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (stage === 'GOING_TWICE') {
+                [0, 0.18].forEach((extra) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    const t = now + extra;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(480, t);
+                    osc.frequency.linearRampToValueAtTime(240, t + 0.4);
+                    gain.gain.setValueAtTime(0.5, t);
+                    gain.gain.linearRampToValueAtTime(0, t + 0.4);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.4);
+                });
+            } else if (stage === 'SOLD') {
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'lowshelf';
+                filter.frequency.value = 300;
+                filter.gain.value = 6;
+                filter.connect(ctx.destination);
+
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(220, now);
+                osc1.frequency.linearRampToValueAtTime(110, now + 0.8);
+                gain1.gain.setValueAtTime(0.6, now);
+                gain1.gain.linearRampToValueAtTime(0, now + 0.8);
+                osc1.connect(gain1);
+                gain1.connect(filter);
+                osc1.start(now);
+                osc1.stop(now + 0.8);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(220, now);
+                osc2.frequency.linearRampToValueAtTime(110, now + 0.8);
+                gain2.gain.setValueAtTime(0.3, now);
+                gain2.gain.linearRampToValueAtTime(0, now + 0.8);
+                osc2.connect(gain2);
+                gain2.connect(filter);
+                osc2.start(now);
+                osc2.stop(now + 0.8);
+            }
+        } catch (err) {
+            console.warn('Gavel audio error:', err);
+        }
+    };
+
+    // Lazy-init AudioContext on first user click (autoplay policy)
+    useEffect(() => {
+        const initAudio = () => {
+            if (!audioCtxRef.current) {
+                audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            document.removeEventListener('click', initAudio);
+        };
+        document.addEventListener('click', initAudio);
+        return () => document.removeEventListener('click', initAudio);
+    }, []);
+
+    // ── Feature 3: Background Tab Title Ticker ───────────────────────────────
+    useEffect(() => {
+        if (gavelEvent && gavelEvent.stage && gavelEvent.stage !== 'LIVE') {
+            if (gavelEvent.stage === 'GOING_ONCE') {
+                document.title = `⏰ GOING ONCE — ₹${fmt(currentPrice)} | BidStream`;
+            } else if (gavelEvent.stage === 'GOING_TWICE') {
+                document.title = `⚠️ GOING TWICE — ₹${fmt(currentPrice)} | BidStream`;
+            } else if (gavelEvent.stage === 'SOLD') {
+                document.title = `🏆 SOLD — ₹${fmt(currentPrice)} | BidStream`;
+            }
+        } else {
+            document.title = `🔨 [₹${fmt(currentPrice)}] ${product.name} | BidStream`;
+        }
+        return () => {
+            document.title = 'BidStream';
+        };
+    }, [currentPrice, gavelEvent]);
 
     // WebSocket STOMP Connection Setup
     useEffect(() => {
@@ -119,8 +227,44 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                 // 2. Subscribe to Three-Hit Gavel Countdown & Alerts
                 client.subscribe(`/topic/auction/${product.id}/gavel`, (message) => {
                     try {
-                        const event = JSON.parse(message.body);
-                        setGavelEvent(event);
+                        const payload = JSON.parse(message.body);
+                        setGavelEvent(payload);
+
+                        // Feature 1: Play gavel audio
+                        playGavelStrike(payload.stage);
+
+                        // Feature 2: Confetti on gavel events
+                        if (payload.stage === 'GOING_ONCE' || payload.stage === 'GOING_TWICE') {
+                            confetti({ particleCount: 15, spread: 40, origin: { y: 0.6 } });
+                        } else if (payload.stage === 'SOLD') {
+                            // Check if current user is the winner
+                            try {
+                                const token = localStorage.getItem('bidstream_token');
+                                let currentUsername = null;
+                                if (token) {
+                                    const base64Payload = token.split('.')[1];
+                                    const decoded = JSON.parse(atob(base64Payload));
+                                    currentUsername = decoded.sub || decoded.username || decoded.name || null;
+                                }
+                                const isWinner =
+                                    (payload.winnerMaskedName && currentUsername &&
+                                        payload.winnerMaskedName.toLowerCase().includes(currentUsername.slice(0, 3).toLowerCase())) ||
+                                    (payload.winnerId && currentUsername &&
+                                        payload.winnerId === currentUsername);
+
+                                if (isWinner) {
+                                    confetti({
+                                        particleCount: 200,
+                                        spread: 160,
+                                        origin: { y: 0.5 },
+                                        colors: ['#FFD700', '#FF6B35', '#6366F1', '#10B981']
+                                    });
+                                    setWinnerModal(true);
+                                }
+                            } catch (jwtErr) {
+                                console.warn('Could not decode JWT for winner check:', jwtErr);
+                            }
+                        }
                     } catch (e) {
                         console.error('Failed to parse gavel event:', e);
                     }
@@ -145,6 +289,8 @@ const BidConsole = ({ product, onPriceUpdate }) => {
     }, [product.id]);
 
     const handlePlaceBid = async (amountToPlace) => {
+        if (submitting) return;
+
         const rawVal = amountToPlace !== undefined ? amountToPlace : bidAmount;
         const val = Number(rawVal);
         if (isNaN(val) || val < minNextBid) {
@@ -153,12 +299,17 @@ const BidConsole = ({ product, onPriceUpdate }) => {
         }
 
         setSubmitting(true);
+        const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : null;
         try {
-            await productAPI.placeBid(product.id, val);
+            await productAPI.placeBid(product.id, val, idempotencyKey);
             setBidAmount('');
             toast.success(`Bid of ₹${fmt(val)} placed successfully!`);
         } catch (err) {
             let errorMsg = 'Failed to place bid';
+            if (err?.response?.status === 409 || err?.status === 409 || (typeof err === 'object' && err?.error?.includes('Duplicate bid'))) {
+                toast.error('Duplicate bid prevented — request already processed', { icon: '🛡️' });
+                return;
+            }
             if (typeof err === 'string') {
                 errorMsg = err;
             } else if (err?.response?.data) {
@@ -375,6 +526,49 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                     )}
                 </div>
             </div>
+
+            {/* Feature 2: Winner Modal */}
+            <AnimatePresence>
+                {winnerModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                        onClick={() => setWinnerModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, y: 40 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-gradient-to-br from-indigo-950 via-slate-900 to-emerald-950 border border-emerald-500/30 rounded-[2rem] p-10 max-w-sm w-full mx-4 text-center shadow-2xl"
+                        >
+                            <div className="text-6xl mb-4">🏆</div>
+                            <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Congratulations!</h2>
+                            <p className="text-emerald-400 font-black text-sm uppercase tracking-widest mb-6">You Won!</p>
+                            <div className="bg-white/5 rounded-2xl p-4 mb-6 space-y-1">
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Winning Lot</p>
+                                <p className="text-white font-black text-base">{product.name}</p>
+                                <p className="text-emerald-400 font-black text-2xl mt-1">₹{fmt(currentPrice)}</p>
+                            </div>
+                            <button
+                                onClick={() => { window.location.href = `/pay/${product.id}`; }}
+                                className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                            >
+                                Complete Settlement &amp; Pay
+                            </button>
+                            <button
+                                onClick={() => setWinnerModal(false)}
+                                className="mt-3 text-[10px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                            >
+                                Dismiss
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

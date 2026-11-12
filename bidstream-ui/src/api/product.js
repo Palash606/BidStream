@@ -138,12 +138,15 @@ export const productAPI = {
     },
 
     /**
-     * Place a bid on a product
+     * Place a bid on a product with distributed idempotency protection
      */
-    placeBid: async (productId, amount) => {
+    placeBid: async (productId, amount, idempotencyKey) => {
         try {
+            const key = idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined);
+            const headers = key ? { 'X-Idempotency-Key': key } : {};
             const response = await api.post('/api/bids/place', null, {
-                params: { productId, amount }
+                params: { productId, amount },
+                headers
             });
             return response.data;
         } catch (error) {
