@@ -289,6 +289,8 @@ const BidConsole = ({ product, onPriceUpdate }) => {
     }, [product.id]);
 
     const handlePlaceBid = async (amountToPlace) => {
+        if (submitting) return;
+
         const rawVal = amountToPlace !== undefined ? amountToPlace : bidAmount;
         const val = Number(rawVal);
         if (isNaN(val) || val < minNextBid) {
@@ -297,12 +299,17 @@ const BidConsole = ({ product, onPriceUpdate }) => {
         }
 
         setSubmitting(true);
+        const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : null;
         try {
-            await productAPI.placeBid(product.id, val);
+            await productAPI.placeBid(product.id, val, idempotencyKey);
             setBidAmount('');
             toast.success(`Bid of ₹${fmt(val)} placed successfully!`);
         } catch (err) {
             let errorMsg = 'Failed to place bid';
+            if (err?.response?.status === 409 || err?.status === 409 || (typeof err === 'object' && err?.error?.includes('Duplicate bid'))) {
+                toast.error('Duplicate bid prevented — request already processed', { icon: '🛡️' });
+                return;
+            }
             if (typeof err === 'string') {
                 errorMsg = err;
             } else if (err?.response?.data) {
