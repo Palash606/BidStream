@@ -65,7 +65,6 @@ spring:
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
                 key-resolver: "#{@userKeyResolver}"
-
         - id: auction-service-ws
           uri: lb:ws://auction-service
           predicates:
