@@ -14,6 +14,7 @@ import SellerVerification from "./components/dashboard/SellerVerification";
 import AddProductPage from "./pages/AddProductPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage";
+import PaymentCheckoutPage from "./pages/PaymentCheckoutPage";
 import ProductsPage from "./components/dashboard/seller/ProductsPage";
 import AnalyticsPage from "./components/dashboard/seller/AnalyticsPage";
 import OrdersPage from "./components/dashboard/seller/OrdersPage";
@@ -45,8 +46,10 @@ const MainContent = () => {
         const root = window.document.documentElement;
         if (isDark) {
             root.classList.add('dark');
+            root.setAttribute('data-theme', 'dark');
         } else {
             root.classList.remove('dark');
+            root.setAttribute('data-theme', 'light');
         }
     }, [isDark]);
 
@@ -134,6 +137,7 @@ const MainContent = () => {
             <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
 
             <Route path="/product/:id" element={<ProductDetailsPage />} />
+            <Route path="/pay/:id" element={<ProtectedRoute><PaymentCheckoutPage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );

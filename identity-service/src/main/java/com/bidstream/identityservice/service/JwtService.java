@@ -32,6 +32,20 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public UUID extractUserId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String userIdStr = claims.get("userId", String.class);
+            return userIdStr != null ? UUID.fromString(userIdStr) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public long getJwtExpiration() {
+        return jwtExpiration;
+    }
+
     public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
         Claims claims = extractAllClaims(token);
         List<String> roles = claims.get("roles", List.class);

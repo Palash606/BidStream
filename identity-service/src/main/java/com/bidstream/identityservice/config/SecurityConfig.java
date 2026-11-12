@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 "/auth/switch-role",
                                 "/auth/check-verification",
                                 "/auth/verify-otp",
+                                "/auth/logout",
                                 "/auth/forgot-password")
                         .permitAll()
                         .anyRequest().authenticated())

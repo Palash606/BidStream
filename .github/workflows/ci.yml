@@ -40,9 +40,36 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: 🌐 Configure High-Speed Maven Mirror & Resilience
+        run: |
+          mkdir -p ~/.m2
+          cat << 'EOF' > ~/.m2/settings.xml
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <mirrors>
+              <mirror>
+                <id>google-maven-central</id>
+                <name>Google Maven Central Mirror</name>
+                <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+                <mirrorOf>central</mirrorOf>
+              </mirror>
+            </mirrors>
+          </settings>
+          EOF
+
       - name: 🔨 Compile and Test (${{ matrix.service }})
         working-directory: ${{ matrix.service }}
-        run: mvn -B clean test-compile
+        run: |
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt of 3..."
+            mvn -B clean test-compile \
+              -Dmaven.wagon.http.retryHandler.count=5 \
+              -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true && exit 0
+            echo "::warning::Build/Download failed on attempt $attempt. Retrying in 10s..."
+            sleep 10
+          done
+          exit 1
 
   # ==========================================
   # 2. React / Vite Frontend Build

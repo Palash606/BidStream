@@ -36,6 +36,8 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private SellerVerificationService verificationService;
+    @Autowired
+    private UserSessionService userSessionService;
 
     private final Map<String, String> resetTokenCache = new ConcurrentHashMap<>();
 
@@ -81,6 +83,7 @@ public class AuthController {
 
             String newAccessToken = jwtService.generateToken(user);
             String newRefreshToken = jwtService.generateRefreshToken(user);
+            userSessionService.registerSession(user.getId(), newAccessToken, java.time.Duration.ofMillis(jwtService.getJwtExpiration()));
 
             return ResponseEntity.ok(Map.of(
                     "accessToken", newAccessToken,
@@ -93,12 +96,30 @@ public class AuthController {
     public ResponseEntity<?> verify2FA(@RequestParam String email, @RequestParam String otp) {
         if (otpService.validateOtp(email, otp)) {
             User user = userRepository.findByEmail(email).orElseThrow();
+            String accessToken = jwtService.generateToken(user);
+            userSessionService.registerSession(user.getId(), accessToken, java.time.Duration.ofMillis(jwtService.getJwtExpiration()));
             return ResponseEntity.ok(Map.of(
-                    "token", jwtService.generateToken(user),
+                    "token", accessToken,
                     "refreshToken", jwtService.generateRefreshToken(user),
                     "role", user.getRole()));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP.");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                UUID userId = jwtService.extractUserId(token);
+                if (userId != null) {
+                    userSessionService.invalidateSession(userId);
+                }
+            } catch (Exception e) {
+                // Ignore token extraction failure on logout
+            }
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     @PostMapping("/send-otp")

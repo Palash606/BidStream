@@ -1,0 +1,128 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bidstream-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin@1234}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-admin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bidstream-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: bidstream-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8761/ > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+
+  identity-service:
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
+    container_name: bidstream-identity
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/identity_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-admin}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-admin@1234}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+  auction-service:
+    build:
+      context: ./auction-service
+      dockerfile: Dockerfile
+    container_name: bidstream-auction
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auction_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-admin}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-admin@1234}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: bidstream-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+  bidstream-ui:
+    build:
+      context: ./bidstream-ui
+      dockerfile: Dockerfile
+    container_name: bidstream-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "5173:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  postgres_prod_data:

@@ -80,10 +80,18 @@ const BidConsole = ({ product, onPriceUpdate }) => {
             onConnect: () => {
                 setWsConnected(true);
 
-                // 1. Subscribe to Live Bid Price Ticks
+                // 1. Subscribe to Live Bid Price Ticks & Settlements
                 client.subscribe(`/topic/auction/${product.id}`, (message) => {
                     try {
-                        const newBid = JSON.parse(message.body);
+                        const payload = JSON.parse(message.body);
+                        if (payload.type === 'AUCTION_SETTLED') {
+                            toast.success('Auction Lot Officially Settled & Sold!', {
+                                icon: '💳',
+                                style: { borderRadius: '1rem', background: '#0f172a', color: '#fff', fontSize: '12px' }
+                            });
+                            return;
+                        }
+                        const newBid = payload;
                         setBids((prev) => {
                             if (prev.length > 0 && prev[0].amount === newBid.amount) {
                                 return prev;
@@ -198,15 +206,15 @@ const BidConsole = ({ product, onPriceUpdate }) => {
             </AnimatePresence>
 
             {/* Live Arena Console Box */}
-            <div className="relative p-6 bg-white/[0.04] border border-white/10 rounded-[2rem] backdrop-blur-md overflow-hidden shadow-2xl">
+            <div className="relative p-6 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-[2rem] backdrop-blur-md overflow-hidden shadow-xl dark:shadow-2xl transition-colors">
                 {/* Live Badge & WS status */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/5">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Live Bidding Arena</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Live Bidding Arena</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                        <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                             {wsConnected ? 'Real-Time Sync' : 'Reconnecting...'}
                         </span>
@@ -216,15 +224,15 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                 {/* Current Highest Bid Ticker */}
                 <div className="py-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
-                            <TrendingUp size={14} className="text-emerald-400" /> Current Standing Bid
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                            <TrendingUp size={14} className="text-emerald-500 dark:text-emerald-400" /> Current Standing Bid
                         </p>
                         <motion.div
                             key={currentPrice}
-                            initial={{ scale: 1.1, color: '#34d399' }}
-                            animate={{ scale: 1, color: '#ffffff' }}
+                            initial={{ scale: 1.08 }}
+                            animate={{ scale: 1 }}
                             transition={{ duration: 0.3 }}
-                            className="text-4xl md:text-5xl font-black text-white tracking-tight"
+                            className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight"
                         >
                             ₹{fmt(currentPrice)}
                         </motion.div>
@@ -232,12 +240,12 @@ const BidConsole = ({ product, onPriceUpdate }) => {
 
                     <div className="text-left md:text-right">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Minimum Next Bid</p>
-                        <p className="text-lg font-black text-indigo-400">₹{fmt(minNextBid)}</p>
+                        <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">₹{fmt(minNextBid)}</p>
                     </div>
                 </div>
 
                 {isLive ? (
-                    <div className="space-y-4 pt-4 border-t border-white/5">
+                    <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
                         {/* Quick Increment Buttons */}
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Quick Increments</p>
@@ -249,10 +257,10 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                                             key={i}
                                             onClick={() => handlePlaceBid(targetVal)}
                                             disabled={submitting}
-                                            className="px-4 py-3 bg-white/[0.04] hover:bg-indigo-600 hover:text-white border border-white/10 hover:border-indigo-500 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 disabled:opacity-50"
+                                            className="px-4 py-3 bg-slate-100 dark:bg-white/[0.04] hover:bg-indigo-600 hover:text-white border border-slate-200 dark:border-white/10 hover:border-indigo-500 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 disabled:opacity-50 cursor-pointer group"
                                         >
-                                            <span className="text-[10px] text-slate-400 group-hover:text-white">+₹{fmt(inc)}</span>
-                                            <span className="text-xs text-white">₹{fmt(targetVal)}</span>
+                                            <span className="text-[10px] text-slate-500 dark:text-slate-400 group-hover:text-white">+₹{fmt(inc)}</span>
+                                            <span className="text-xs text-slate-900 dark:text-white group-hover:text-white">₹{fmt(targetVal)}</span>
                                         </button>
                                     );
                                 })}
@@ -270,13 +278,13 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                                     placeholder={`Min: ₹${fmt(minNextBid)}`}
                                     value={bidAmount}
                                     onChange={(e) => setBidAmount(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-8 pr-4 text-sm font-bold text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
+                                    className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl py-3.5 pl-8 pr-4 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-inner"
                                 />
                             </div>
                             <button
                                 onClick={() => handlePlaceBid()}
                                 disabled={submitting}
-                                className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                                className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                             >
                                 {submitting ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -288,20 +296,43 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                             </button>
                         </div>
                     </div>
+                ) : product.status === 'PAYMENT_PENDING' ? (
+                    <div className="py-6 text-center space-y-3 border-t border-slate-100 dark:border-white/5">
+                        <div className="text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-widest">
+                            Auction Concluded — Awaiting Winner Settlement
+                        </div>
+                        <button
+                            onClick={() => window.location.href = `/pay/${product.id}`}
+                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                        >
+                            Complete Settlement & Pay (Mock Checkout)
+                        </button>
+                    </div>
+                ) : product.status === 'SOLD' ? (
+                    <div className="py-6 text-center space-y-2 border-t border-slate-100 dark:border-white/5">
+                        <div className="text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                            <span>Auction Lot Settled & Sold!</span>
+                        </div>
+                        {product.paymentTransactionId && (
+                            <p className="text-[10px] text-slate-500 font-mono">
+                                Txn: {product.paymentTransactionId}
+                            </p>
+                        )}
+                    </div>
                 ) : (
-                    <div className="py-6 text-center text-slate-500 text-xs font-black uppercase tracking-widest border-t border-white/5">
+                    <div className="py-6 text-center text-slate-500 text-xs font-black uppercase tracking-widest border-t border-slate-100 dark:border-white/5">
                         Bidding is currently inactive for this lot
                     </div>
                 )}
             </div>
 
             {/* Live Bid Stream / History */}
-            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] backdrop-blur-sm">
+            <div className="p-6 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-[2rem] shadow-sm backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                        <History size={14} className="text-indigo-400" /> Live Bid Stream ({bids.length})
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                        <History size={14} className="text-indigo-600 dark:text-indigo-400" /> Live Bid Stream ({bids.length})
                     </p>
-                    <span className="text-[10px] font-bold text-slate-600 uppercase">Instant Updates</span>
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase">Instant Updates</span>
                 </div>
 
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -317,8 +348,8 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                                 animate={{ opacity: 1, x: 0 }}
                                 className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
                                     idx === 0
-                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                                        : 'bg-white/[0.02] border-white/5 text-slate-300'
+                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                                        : 'bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300'
                                 }`}
                             >
                                 <div className="flex items-center gap-2.5">
@@ -328,13 +359,13 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                                     />
                                     <span className="font-bold">{b.maskedName || 'Anonymous Bidder'}</span>
                                     {idx === 0 && (
-                                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-wider">
+                                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-wider">
                                             Leading
                                         </span>
                                     )}
                                 </div>
                                 <div className="text-right">
-                                    <span className="font-black text-white">₹{fmt(b.amount)}</span>
+                                    <span className="font-black text-slate-900 dark:text-white">₹{fmt(b.amount)}</span>
                                     <p className="text-[9px] text-slate-500">
                                         {formatBidTime(b.bidTime)}
                                     </p>

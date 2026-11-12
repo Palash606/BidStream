@@ -39,7 +39,8 @@ public class SecurityConfig {
                                                                 "/api/categories/all",
                                                                 "/images/**",
                                                                 "/ws-auction",
-                                                                "/ws-auction/**")
+                                                                "/ws-auction/**",
+                                                                "/api/payments/**")
                                                 .permitAll()
                                                 // Allow both ADMIN and SELLER to add categories
                                                 .requestMatchers("/api/categories/add").hasAnyRole("ADMIN")

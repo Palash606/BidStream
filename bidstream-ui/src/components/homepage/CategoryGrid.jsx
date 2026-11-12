@@ -57,14 +57,14 @@ const CategoryGrid = () => {
     ];
 
     return (
-        <section className="py-12 md:py-16 bg-slate-950 transition-colors duration-300">
+        <section className="py-12 md:py-16 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
             <div className="max-w-[1400px] mx-auto px-6">
                 {/* Section Header */}
                 <div className="mb-6">
-                    <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
                         Shop by Category
                     </h2>
-                    <p className="text-gray-400 font-medium">
+                    <p className="text-slate-600 dark:text-gray-400 font-medium">
                         Explore premium auctions across exclusive categories
                     </p>
                 </div>
@@ -79,7 +79,7 @@ const CategoryGrid = () => {
                         >
                             {/* Image Circle with Gradient Border - Larger size */}
                             <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br ${gradient} p-[3px] transition-all group-hover:scale-105 group-hover:shadow-2xl`}>
-                                <div className="w-full h-full rounded-full overflow-hidden bg-slate-800">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                                     <img
                                         src={image}
                                         alt={label}
@@ -89,7 +89,7 @@ const CategoryGrid = () => {
                             </div>
 
                             {/* Label */}
-                            <span className="text-xs md:text-sm font-bold text-center text-gray-300 group-hover:text-blue-400 transition-colors leading-tight">
+                            <span className="text-xs md:text-sm font-bold text-center text-slate-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
                                 {label}
                             </span>
                         </Link>

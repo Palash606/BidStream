@@ -7,8 +7,7 @@ const DashboardLayout = ({ children, fullWidth = false }) => {
     const user = useAuthStore((state) => state.user);
 
     return (
-        <div
-            className={`min-h-screen transition-colors duration-500 ${user?.activeRole === 'ROLE_SELLER' ? 'dark bg-[#050510]' : 'bg-white'}`}>
+        <div className="min-h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <div>
                 {user?.activeRole === 'ROLE_SELLER' ? <SellerNavbar /> : <BidderNavbar />}
                 {user?.activeRole !== 'ROLE_SELLER' && <CategoryRibbon />}

@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, Moon, Sun, ChevronDown, Heart, HelpCircle, LogOut, Settings, User, Gavel, Store } from 'lucide-react';
+import { Search, Bell, ChevronDown, Heart, HelpCircle, LogOut, Settings, User, Gavel, Store } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BidStreamLogo } from '../ui/Logo';
 import { useAuthStore, getProfileColor } from '../../stores';
 import { toast } from 'react-hot-toast';
+import ThemeToggle from '../common/ThemeToggle';
 
 const BidderNavbar = () => {
     const user = useAuthStore((state) => state.user);
@@ -42,21 +43,26 @@ const BidderNavbar = () => {
 
     return (
         <nav
-            className="w-full border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-[60] transition-colors duration-300">
-            {/* Top Utility Bar */}
-            <div className="border-b border-slate-100 dark:border-slate-800 hidden sm:block">
+            className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-[60] transition-colors duration-300">
+            {/* Top Utility Bar with Top-Left Theme Switch */}
+            <div className="border-b border-slate-100 dark:border-slate-800 hidden sm:block bg-slate-50/80 dark:bg-slate-950/80 transition-colors">
                 <div
-                    className="mx-auto max-w-[1400px] px-6 py-2 flex justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                    <div className="flex gap-8"><span
-                        className="hover:text-blue-600 cursor-pointer">Help & Support</span><span
-                            className="hover:text-blue-600 cursor-pointer">Daily Deals</span></div>
-                    <div className="flex gap-8"><span
-                        className="hover:text-blue-600 cursor-pointer flex items-center gap-1.5"><Heart size={12} /> Wishlist</span>
+                    className="mx-auto max-w-[1400px] px-6 py-2 flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                    <div className="flex items-center gap-6">
+                        <ThemeToggle variant="switch" />
+                        <span className="hover:text-blue-600 cursor-pointer">Help & Support</span>
+                        <span className="hover:text-blue-600 cursor-pointer">Daily Deals</span>
+                    </div>
+                    <div className="flex items-center gap-8">
+                        <span className="hover:text-blue-600 cursor-pointer flex items-center gap-1.5"><Heart size={12} /> Wishlist</span>
                     </div>
                 </div>
             </div>
             <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 gap-8">
-                <Link to="/"><BidStreamLogo /></Link>
+                <div className="flex items-center gap-3">
+                    <ThemeToggle variant="compact" className="sm:hidden" />
+                    <Link to="/"><BidStreamLogo /></Link>
+                </div>
                 <div
                     className="flex-1 hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-full border-2 border-transparent focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-slate-950 transition-all overflow-hidden">
                     <div className="pl-4 border-r border-slate-200 dark:border-slate-700 pr-2">
