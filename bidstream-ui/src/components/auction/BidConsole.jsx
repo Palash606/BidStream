@@ -80,10 +80,18 @@ const BidConsole = ({ product, onPriceUpdate }) => {
             onConnect: () => {
                 setWsConnected(true);
 
-                // 1. Subscribe to Live Bid Price Ticks
+                // 1. Subscribe to Live Bid Price Ticks & Settlements
                 client.subscribe(`/topic/auction/${product.id}`, (message) => {
                     try {
-                        const newBid = JSON.parse(message.body);
+                        const payload = JSON.parse(message.body);
+                        if (payload.type === 'AUCTION_SETTLED') {
+                            toast.success('Auction Lot Officially Settled & Sold!', {
+                                icon: '💳',
+                                style: { borderRadius: '1rem', background: '#0f172a', color: '#fff', fontSize: '12px' }
+                            });
+                            return;
+                        }
+                        const newBid = payload;
                         setBids((prev) => {
                             if (prev.length > 0 && prev[0].amount === newBid.amount) {
                                 return prev;
@@ -287,6 +295,29 @@ const BidConsole = ({ product, onPriceUpdate }) => {
                                 )}
                             </button>
                         </div>
+                    </div>
+                ) : product.status === 'PAYMENT_PENDING' ? (
+                    <div className="py-6 text-center space-y-3 border-t border-white/5">
+                        <div className="text-amber-400 text-xs font-black uppercase tracking-widest">
+                            Auction Concluded — Awaiting Winner Settlement
+                        </div>
+                        <button
+                            onClick={() => window.location.href = `/pay/${product.id}`}
+                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                        >
+                            Complete Settlement & Pay (Mock Checkout)
+                        </button>
+                    </div>
+                ) : product.status === 'SOLD' ? (
+                    <div className="py-6 text-center space-y-2 border-t border-white/5">
+                        <div className="text-emerald-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                            <span>Auction Lot Settled & Sold!</span>
+                        </div>
+                        {product.paymentTransactionId && (
+                            <p className="text-[10px] text-slate-500 font-mono">
+                                Txn: {product.paymentTransactionId}
+                            </p>
+                        )}
                     </div>
                 ) : (
                     <div className="py-6 text-center text-slate-500 text-xs font-black uppercase tracking-widest border-t border-white/5">

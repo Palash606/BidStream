@@ -45,6 +45,8 @@ public class Product {
     private String auctionType; // THREE_HAMMER or END_TIME
     private UUID sellerId;
     private UUID winnerId;
+    private String paymentTransactionId;
+    private LocalDateTime paymentSettledAt;
 
     @JsonProperty("categoryName")
     public String getCategoryName() {

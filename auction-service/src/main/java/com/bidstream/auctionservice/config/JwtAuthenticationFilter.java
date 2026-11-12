@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final com.bidstream.auctionservice.service.UserSessionService userSessionService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -46,6 +47,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String userEmail = jwtService.extractUsername(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                java.util.UUID userId = jwtService.extractUserId(jwt);
+                if (userId != null && !userSessionService.isSessionActive(userId, jwt)) {
+                    log.warn("Session invalidated for user: {} (newer login on another device)", userEmail);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Session invalidated by a more recent login on another device\"}");
+                    return;
+                }
+
                 Collection<? extends GrantedAuthority> authorities = jwtService.extractAuthorities(jwt);
                 log.debug("Authenticated user: {} with authorities: {}", userEmail, authorities);
 

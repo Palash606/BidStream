@@ -62,6 +62,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             @Param("now") LocalDateTime now,
             @Param("status") ProductStatus status);
 
+    List<Product> findBySellerId(UUID sellerId);
+
     List<Product> findByStatus(ProductStatus productStatus);
 //    // 1. Filter by category
 //    List<Product> findByCategoryIdAndStatus(Long categoryId, ProductStatus status);

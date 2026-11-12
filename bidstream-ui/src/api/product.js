@@ -161,5 +161,31 @@ export const productAPI = {
         } catch (error) {
             throw error.response?.data || error;
         }
+    },
+
+    /**
+     * Get seller dynamic analytics (GMV, platform cut, net earnings, bid velocity, category breakdown)
+     */
+    getSellerAnalytics: async (period = 'WEEK') => {
+        try {
+            const response = await api.get(`${API_URL}/seller/analytics`, {
+                params: { period }
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Process mock card payment settlement
+     */
+    processMockPayment: async (paymentData) => {
+        try {
+            const response = await api.post('/api/payments/mock-charge', paymentData);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     }
 };

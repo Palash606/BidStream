@@ -26,6 +26,8 @@ public class RegistrationService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private UserSessionService userSessionService;
 
     public boolean isUsernameAvailable(String username) {
         return !userRepository.existsByUsername(username);
@@ -75,6 +77,7 @@ public class RegistrationService {
             // Generate new tokens with the updated role
             String newAccessToken = jwtService.generateToken(user);
             String newRefreshToken = jwtService.generateRefreshToken(user);
+            userSessionService.registerSession(user.getId(), newAccessToken, java.time.Duration.ofMillis(jwtService.getJwtExpiration()));
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Successfully switched to " + enumLookup + " mode.");
@@ -225,6 +228,7 @@ public class RegistrationService {
         userRepository.save(user);
 
         String token = jwtService.generateToken(user);
+        userSessionService.registerSession(user.getId(), token, java.time.Duration.ofMillis(jwtService.getJwtExpiration()));
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
         response.put("role", user.getRole());

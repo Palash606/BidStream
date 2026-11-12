@@ -24,6 +24,7 @@ import java.util.Collection;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final com.bidstream.identityservice.service.UserSessionService userSessionService;
 
     @Override
     protected void doFilterInternal(
@@ -49,6 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 3. Authenticate if the user is found and not already authenticated in this context
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                java.util.UUID userId = jwtService.extractUserId(jwt);
+                if (userId != null && !userSessionService.isSessionActive(userId, jwt)) {
+                    log.warn("Session invalidated for user: {} (newer login on another device)", userEmail);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Session invalidated by a more recent login on another device\"}");
+                    return;
+                }
 
                 // CRITICAL: Ensure your JwtService prepends "ROLE_" to your roles (e.g., ROLE_ADMIN)
                 Collection<? extends GrantedAuthority> authorities = jwtService.extractAuthorities(jwt);
