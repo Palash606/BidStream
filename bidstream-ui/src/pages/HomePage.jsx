@@ -157,7 +157,7 @@ const HomePage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
             {/* Public Navigation */}
             <PublicNavbar />
 
@@ -213,7 +213,7 @@ const HomePage = () => {
             />
 
             {/* Separator Line */}
-            <div className="border-t border-slate-800 my-4 max-w-[1400px] mx-auto w-full opacity-50" />
+            <div className="border-t border-slate-200 dark:border-slate-800 my-6 max-w-[1400px] mx-auto w-full opacity-60" />
 
             {/* Contact Us Section - Theme Aware */}
             <ContactSection />

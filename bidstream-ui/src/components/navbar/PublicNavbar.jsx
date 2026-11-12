@@ -17,6 +17,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../stores';
 import { toast } from 'react-hot-toast';
+import ThemeToggle from '../common/ThemeToggle';
 
 /**
  * PublicNavbar - Fully responsive desktop layout on all screen sizes
@@ -106,14 +107,17 @@ const PublicNavbar = () => {
     };
 
     return (
-        <nav className="sticky top-0 z-50 bg-[var(--nav-bg)] border-b border-[var(--border-default)] shadow-sm transition-colors duration-300">
-            {/* Top Utility Bar */}
-            <div className="bg-slate-950 border-b border-slate-800 transition-colors duration-300">
+        <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+            {/* Top Utility Bar with Top-Left Theme Switcher */}
+            <div className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
                 <div className="max-w-[1400px] mx-auto px-6 py-2 flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4">
+                        {/* Modern Top-Left Theme Switcher */}
+                        <ThemeToggle variant="switch" />
+                        <div className="h-4 w-px bg-slate-200 dark:border-slate-800 hidden sm:block" />
                         {!user ? (
                             <>
-                                <span className="text-gray-600 dark:text-gray-400">
+                                <span className="text-slate-600 dark:text-gray-400 hidden sm:inline">
                                     Hi! <Link to="/login"
                                         className="text-blue-600 hover:text-blue-700 font-semibold">Sign in</Link> or <Link
                                             to="/register"
@@ -121,13 +125,13 @@ const PublicNavbar = () => {
                                 </span>
                             </>
                         ) : (
-                            <span className="text-gray-600 dark:text-gray-400">
+                            <span className="text-slate-600 dark:text-gray-400 hidden sm:inline">
                                 Hi, <span
-                                    className="font-semibold text-gray-900 dark:text-white">{user.firstName || user.email?.split('@')[0]}</span>!
+                                    className="font-semibold text-slate-900 dark:text-white">{user.firstName || user.email?.split('@')[0]}</span>!
                             </span>
                         )}
                         <Link to="/deals"
-                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors">
+                            className="text-slate-600 dark:text-gray-400 hover:text-blue-600 transition-colors">
                             Daily Deals
                         </Link>
                     </div>
@@ -136,10 +140,10 @@ const PublicNavbar = () => {
                         {/* Notification Bell - Moved from main navbar */}
                         <button
                             onClick={() => handleProtectedAction(() => navigate('/notifications'))}
-                            className="relative p-1.5 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                            className="relative p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
                             aria-label="Notifications"
                         >
-                            <Bell size={14} className="text-gray-600 dark:text-gray-400" />
+                            <Bell size={14} className="text-slate-600 dark:text-gray-400" />
                             {user && (
                                 <span
                                     className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
@@ -152,10 +156,10 @@ const PublicNavbar = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setIsHelpOpen(!isHelpOpen)}
-                                className="p-2 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
                                 aria-label="Help"
                             >
-                                <HelpCircle size={16} className="text-gray-600 dark:text-gray-400" />
+                                <HelpCircle size={16} className="text-slate-600 dark:text-gray-400" />
                             </button>
 
                             <AnimatePresence>
@@ -199,28 +203,31 @@ const PublicNavbar = () => {
             {/* Main Navbar - Bootstrap-like Responsive Layout */}
             <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-3">
                 <div className="flex items-center gap-2 md:gap-4">
+                    {/* Compact Theme Switch for Mobile Screens */}
+                    <ThemeToggle variant="compact" className="sm:hidden" />
+
                     {/* Logo - Responsive sizing */}
                     <Link to="/" className="flex items-center gap-2 group">
                         <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-extrabold tracking-tight whitespace-nowrap" style={{ fontFamily: 'Outfit, sans-serif' }}>
                             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Bid</span>
-                            <span className="text-white transition-colors">Stream</span>
+                            <span className="text-slate-900 dark:text-white transition-colors">Stream</span>
                         </div>
                     </Link>
 
                     {/* Search Bar - Always visible, fully responsive - Expanded width */}
                     <form onSubmit={handleSearch} className="flex-1 flex items-center max-w-[80vw] sm:max-w-[70vw] md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-2 sm:px-4">
-                        <div className="relative flex-1 flex items-center bg-slate-800 border-2 border-slate-700 rounded-l-full focus-within:border-blue-500 focus-within:shadow-lg transition-all h-9 sm:h-10 md:h-11">
+                        <div className="relative flex-1 flex items-center bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-l-full focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-lg transition-all h-9 sm:h-10 md:h-11">
                             {/* Category Dropdown - Responsive scaling */}
                             <div className="relative h-full flex items-center">
                                 <button
                                     type="button"
                                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                                    className="h-full flex items-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-5 border-r border-slate-700 hover:bg-slate-700 transition-colors cursor-pointer rounded-l-full"
+                                    className="h-full flex items-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-5 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer rounded-l-full"
                                 >
-                                    <span className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-300 whitespace-nowrap max-w-[60px] sm:max-w-none overflow-hidden text-ellipsis">
+                                    <span className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-700 dark:text-gray-300 whitespace-nowrap max-w-[60px] sm:max-w-none overflow-hidden text-ellipsis">
                                         {selectedCategory}
                                     </span>
-                                    <ChevronDown size={12} className={`sm:w-4 sm:h-4 text-gray-500 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                                    <ChevronDown size={12} className={`sm:w-4 sm:h-4 text-slate-500 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
                                 <AnimatePresence>
@@ -229,7 +236,7 @@ const PublicNavbar = () => {
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -10 }}
-                                            className="absolute top-full left-0 mt-2 w-48 sm:w-56 md:w-64 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 py-2 z-50"
+                                            className="absolute top-full left-0 mt-2 w-48 sm:w-56 md:w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-hidden"
                                         >
                                             {categories.map((category) => (
                                                 <button
@@ -240,8 +247,8 @@ const PublicNavbar = () => {
                                                         setIsCategoryOpen(false);
                                                     }}
                                                     className={`w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm transition-colors cursor-pointer ${selectedCategory === category
-                                                        ? 'bg-blue-900/20 text-blue-400 font-semibold'
-                                                        : 'text-gray-300 hover:bg-slate-700'
+                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold'
+                                                        : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                                                         }`}
                                                 >
                                                     {category}
@@ -258,14 +265,14 @@ const PublicNavbar = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search..."
-                                className="flex-1 px-2 sm:px-3 md:px-4 lg:px-6 py-1.5 sm:py-2 md:py-2.5 bg-transparent outline-none text-xs sm:text-sm md:text-base text-white placeholder-gray-500 w-full min-w-0"
+                                className="flex-1 px-2 sm:px-3 md:px-4 lg:px-6 py-1.5 sm:py-2 md:py-2.5 bg-transparent outline-none text-xs sm:text-sm md:text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 w-full min-w-0"
                             />
                         </div>
 
                         {/* Search Button - Responsive sizing */}
                         <button
                             type="submit"
-                            className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-r-full transition-all flex items-center justify-center hover:shadow-lg cursor-pointer h-9 sm:h-10 md:h-11"
+                            className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-r-full transition-all flex items-center justify-center hover:shadow-lg cursor-pointer h-9 sm:h-10 md:h-11 shadow-md shadow-blue-500/20 active:scale-95"
                         >
                             <Search size={16} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
                             <span className="hidden sm:inline ml-2 text-xs md:text-sm lg:text-base">Search</span>
@@ -280,13 +287,13 @@ const PublicNavbar = () => {
                                 <div className="hidden sm:flex items-center gap-2 sm:gap-3 md:gap-4">
                                     <Link
                                         to="/login"
-                                        className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-semibold text-gray-300 hover:text-blue-400 transition-colors cursor-pointer"
+                                        className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                                     >
                                         Login
                                     </Link>
                                     <Link
                                         to="/register"
-                                        className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] sm:text-xs md:text-sm font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 cursor-pointer"
+                                        className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] sm:text-xs md:text-sm font-bold rounded-full shadow-md shadow-blue-500/20 hover:shadow-xl transition-all hover:scale-105 cursor-pointer"
                                     >
                                         Register
                                     </Link>
@@ -296,7 +303,7 @@ const PublicNavbar = () => {
                                 <div className="relative sm:hidden">
                                     <button
                                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                        className="w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-full text-gray-300 hover:text-white hover:border-slate-600 transition-all cursor-pointer"
+                                        className="w-9 h-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                                     >
                                         <User size={18} />
                                     </button>
@@ -307,12 +314,12 @@ const PublicNavbar = () => {
                                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1"
+                                                className="absolute top-full right-0 mt-3 w-48 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1"
                                             >
                                                 <Link
                                                     to="/login"
                                                     onClick={() => setIsUserMenuOpen(false)}
-                                                    className="w-full px-4 py-3 text-sm font-semibold text-center text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
+                                                    className="w-full px-4 py-3 text-sm font-semibold text-center text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
                                                 >
                                                     Sign In
                                                 </Link>
@@ -333,10 +340,10 @@ const PublicNavbar = () => {
                                 {/* Wishlist with badge - Responsive */}
                                 <button
                                     onClick={() => handleProtectedAction(() => navigate('/wishlist'))}
-                                    className="relative p-1 sm:p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+                                    className="relative p-1 sm:p-1.5 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
                                     aria-label="Wishlist"
                                 >
-                                    <Heart size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400" />
+                                    <Heart size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-slate-600 dark:text-gray-400" />
                                     <span
                                         className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[8px] sm:text-xs font-bold rounded-full flex items-center justify-center">
                                         3
@@ -346,7 +353,7 @@ const PublicNavbar = () => {
                                 {/* Sell Products Button - Responsive */}
                                 <button
                                     onClick={handleSwitchToSeller}
-                                    className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] sm:text-xs md:text-sm font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-1 sm:gap-2 cursor-pointer"
+                                    className="px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] sm:text-xs md:text-sm font-bold rounded-full shadow-md shadow-indigo-500/20 hover:shadow-xl transition-all hover:scale-105 flex items-center gap-1 sm:gap-2 cursor-pointer"
                                     aria-label="Sell Products"
                                 >
                                     <Store size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
@@ -417,7 +424,7 @@ const PublicNavbar = () => {
             </div>
 
             {/* Category Ribbon - Always visible, responsive sizing */}
-            <div className="border-t border-slate-700 bg-slate-900 transition-colors duration-300">
+            <div className="border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900 transition-colors duration-300">
                 <div className="max-w-[1400px] mx-auto px-2 sm:px-4 md:px-6">
                     <nav className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 py-1.5 sm:py-2 md:py-3 overflow-x-auto scrollbar-hide">
                         {ribbonCategories.map((category) => (
@@ -425,8 +432,8 @@ const PublicNavbar = () => {
                                 key={category}
                                 to={`/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
                                 className="text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap
-                                    text-gray-300
-                                    hover:text-white
+                                    text-slate-600 dark:text-gray-300
+                                    hover:text-blue-600 dark:hover:text-white
                                     relative group
                                     transition-colors duration-200
                                     cursor-pointer"

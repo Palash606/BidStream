@@ -8,6 +8,7 @@ import {
 import { productAPI } from '../api/product';
 import { useAuthStore } from '../stores';
 import toast from 'react-hot-toast';
+import ThemeToggle from '../components/common/ThemeToggle';
 
 const PaymentCheckoutPage = () => {
     const { id: productId } = useParams();
@@ -120,18 +121,22 @@ const PaymentCheckoutPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#050510] text-slate-300 py-10 px-4">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#050510] text-slate-800 dark:text-slate-300 py-10 px-4 transition-colors duration-300">
             <div className="max-w-4xl mx-auto space-y-8">
 
-                {/* Header Navigation */}
+                {/* Header Navigation with Top-Left Theme Switcher */}
                 <div className="flex items-center justify-between">
-                    <button
-                        onClick={() => navigate(productId ? `/product/${productId}` : '/')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition-all uppercase tracking-wider"
-                    >
-                        <ArrowLeft size={14} /> Back to Auction Lot
-                    </button>
-                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle variant="switch" />
+                        <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
+                        <button
+                            onClick={() => navigate(productId ? `/product/${productId}` : '/')}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all uppercase tracking-wider cursor-pointer shadow-sm"
+                        >
+                            <ArrowLeft size={14} /> Back to Auction Lot
+                        </button>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
                         <Lock size={12} /> 256-Bit SSL Encrypted Mock Gateway
                     </div>
                 </div>
@@ -236,30 +241,30 @@ const PaymentCheckoutPage = () => {
                             </motion.div>
 
                             {/* Order Summary Box */}
-                            <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 space-y-3">
-                                <h4 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                    <Receipt size={14} className="text-indigo-400" /> Auction Lot Summary
+                            <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-2xl p-5 space-y-3 shadow-sm">
+                                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                    <Receipt size={14} className="text-indigo-600 dark:text-indigo-400" /> Auction Lot Summary
                                 </h4>
-                                <div className="flex justify-between text-xs py-1 border-b border-white/5">
-                                    <span className="text-slate-400">Winning Bid</span>
-                                    <span className="font-bold text-white">₹{amount.toLocaleString('en-IN')}</span>
+                                <div className="flex justify-between text-xs py-1 border-b border-slate-100 dark:border-white/5">
+                                    <span className="text-slate-500 dark:text-slate-400">Winning Bid</span>
+                                    <span className="font-bold text-slate-900 dark:text-white">₹{amount.toLocaleString('en-IN')}</span>
                                 </div>
-                                <div className="flex justify-between text-xs py-1 border-b border-white/5">
-                                    <span className="text-slate-400">Platform Handling</span>
-                                    <span className="font-bold text-emerald-400">FREE (Trial)</span>
+                                <div className="flex justify-between text-xs py-1 border-b border-slate-100 dark:border-white/5">
+                                    <span className="text-slate-500 dark:text-slate-400">Platform Handling</span>
+                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">FREE (Trial)</span>
                                 </div>
                                 <div className="flex justify-between text-sm pt-2 font-black">
-                                    <span className="text-white">Total Settlement</span>
-                                    <span className="text-indigo-400">₹{amount.toLocaleString('en-IN')}</span>
+                                    <span className="text-slate-900 dark:text-white">Total Settlement</span>
+                                    <span className="text-indigo-600 dark:text-indigo-400">₹{amount.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Card Input Form (7 Cols) */}
-                        <div className="md:col-span-7 bg-white/[0.02] border border-white/10 rounded-3xl p-7 space-y-6">
+                        <div className="md:col-span-7 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-3xl p-7 space-y-6 shadow-sm">
                             <div>
-                                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                                    <CreditCard size={18} className="text-indigo-400" /> Card Details
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    <CreditCard size={18} className="text-indigo-600 dark:text-indigo-400" /> Card Details
                                 </h3>
                                 <p className="text-xs text-slate-500 mt-0.5">
                                     Simulate your payment settlement with test card credentials.
@@ -268,7 +273,7 @@ const PaymentCheckoutPage = () => {
 
                             <form onSubmit={handleInitiatePayment} className="space-y-4">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                                         Cardholder Name
                                     </label>
                                     <input
@@ -276,13 +281,13 @@ const PaymentCheckoutPage = () => {
                                         value={cardHolder}
                                         onChange={(e) => setCardHolder(e.target.value)}
                                         required
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-black/60 transition-colors shadow-inner"
                                         placeholder="e.g. John Doe"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                                         16-Digit Card Number
                                     </label>
                                     <div className="relative">
@@ -292,16 +297,16 @@ const PaymentCheckoutPage = () => {
                                             onChange={handleCardNumberChange}
                                             maxLength={19}
                                             required
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-black/60 transition-colors shadow-inner"
                                             placeholder="4532 8921 7643 9012"
                                         />
-                                        <CreditCard size={16} className="absolute right-3 top-3 text-slate-500" />
+                                        <CreditCard size={16} className="absolute right-3 top-3 text-slate-400 dark:text-slate-500" />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                                             Expiry Date (MM/YY)
                                         </label>
                                         <input
@@ -310,12 +315,12 @@ const PaymentCheckoutPage = () => {
                                             onChange={handleExpiryChange}
                                             maxLength={5}
                                             required
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-black/60 transition-colors shadow-inner"
                                             placeholder="12/28"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                                             CVV / CVC
                                         </label>
                                         <input
@@ -324,7 +329,7 @@ const PaymentCheckoutPage = () => {
                                             onChange={(e) => setCvv(e.target.value.substring(0, 4))}
                                             maxLength={4}
                                             required
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-black/60 transition-colors shadow-inner"
                                             placeholder="888"
                                         />
                                     </div>

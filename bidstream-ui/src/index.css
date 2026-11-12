@@ -4,112 +4,102 @@
 @import "tailwindcss";
 
 /**
- * HARD-OVERRIDE THEME ENGINE
- * GeeksforGeeks-style .dark class with instant UI transformation
- * Identity A (Light): Clean white backgrounds, professional
- * Identity B (Dark): Deep black backgrounds, immersive
+ * Enable class-based dark mode in Tailwind CSS v4
  */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /**
- * FORCED DARK MODE THEME
- * Permanent dark theme with deep blacks and slate colors
+ * DUAL-THEME ENGINE ARCHITECTURE
+ * Light Mode (:root): Clean slate-50/white backgrounds, crisp dark slate-900 typography
+ * Dark Mode (.dark, [data-theme="dark"]): Deep obsidian/slate-950 backgrounds, crisp luminous typography
  */
 
-/* ===== PERMANENT DARK MODE ===== */
+/* ===== LIGHT MODE (Default Foundation) ===== */
 :root {
-  /* ===== Page Foundation (DARK: Deep Black) ===== */
-  --page-bg: #0a0a0a;
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #0f172a;
-  --bg-tertiary: #1e293b;
+  /* ===== Page Foundation ===== */
+  --page-bg: #f8fafc;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
 
   /* ===== Card & Container Backgrounds ===== */
-  --card-bg: #1e293b;
-  --card-hover-bg: #334155;
-  --input-bg: #1e293b;
-  --modal-bg: #0f172a;
+  --card-bg: #ffffff;
+  --card-hover-bg: #f8fafc;
+  --input-bg: #ffffff;
+  --modal-bg: #ffffff;
 
   /* ===== Text Colors ===== */
-  --text-primary: #ffffff;
-  --text-secondary: #e2e8f0;
-  --text-tertiary: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
   --text-muted: #94a3b8;
-  --text-inverse: #0a0a0a;
+  --text-inverse: #ffffff;
 
   /* ===== Borders ===== */
-  --border-default: #334155;
-  --border-light: #1e293b;
-  --border-strong: #475569;
-  --border-focus: #6366f1;
+  --border-default: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-strong: #cbd5e1;
+  --border-focus: #4f46e5;
 
-  /* ===== Interactive Elements (Blue-Purple Gradient) ===== */
-  --button-primary-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --button-secondary-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  --button-accent-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --button-hover-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-  --link-color: #60a5fa;
-  --link-hover: #93c5fd;
+  /* ===== Interactive Elements ===== */
+  --button-primary-bg: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --button-secondary-bg: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+  --button-accent-bg: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --button-hover-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
+  --link-color: #2563eb;
+  --link-hover: #1d4ed8;
 
-  /* ===== Glassmorphism (Enhanced for Dark) ===== */
-  --glass-bg: rgba(15, 23, 42, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-card-bg: rgba(30, 41, 59, 0.8);
-  --glass-card-border: rgba(51, 65, 85, 0.5);
+  /* ===== Glassmorphism ===== */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-card-bg: rgba(255, 255, 255, 0.95);
+  --glass-card-border: rgba(203, 213, 225, 0.6);
   --glass-backdrop-blur: 16px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 
   /* ===== Navigation ===== */
-  --nav-bg: #0f172a;
-  --nav-border: #1e293b;
-  --nav-hover-bg: #1e293b;
-  --nav-active-bg: #334155;
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --nav-border: #e2e8f0;
+  --nav-hover-bg: #f1f5f9;
+  --nav-active-bg: #e2e8f0;
 
   /* ===== Specific Sections ===== */
-  --contact-bg: #0a0a0a;
-  --footer-bg: linear-gradient(135deg, #0a0a0a 0%, #1e1b4b 20%, #0a0a0a 100%);
-  --hero-overlay: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+  --contact-bg: #ffffff;
+  --footer-bg: #f8fafc;
+  --hero-overlay: linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%);
 
   /* ===== Shadows ===== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.5);
-  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
-  --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-default: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.15);
+  --shadow-glow-strong: 0 0 35px rgba(79, 70, 229, 0.25);
 
   /* ===== Accent Colors ===== */
-  --accent-primary: #6366f1;
-  --accent-secondary: #a855f7;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-  --accent-error: #ef4444;
+  --accent-primary: #4f46e5;
+  --accent-secondary: #9333ea;
+  --accent-success: #059669;
+  --accent-warning: #d97706;
+  --accent-error: #dc2626;
 
   /* ===== Spacing ===== */
   --space-section: 4rem;
 }
 
-/* Force dark backgrounds globally */
-body {
-  background-color: #0a0a0a !important;
-  color: #ffffff !important;
-}
-
-#root {
-  background-color: #0a0a0a !important;
-}
-
-/* ===== IDENTITY B: DARK MODE (Immersive Slate/Indigo) ===== */
+/* ===== DARK MODE (Immersive Obsidian / Deep Slate) ===== */
+.dark,
 [data-theme="dark"] {
   /* ===== Page Foundation ===== */
-  --page-bg: #0f172a;
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #1a1a1a;
+  --page-bg: #07070f;
+  --bg-primary: #0b0f19;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
 
   /* ===== Card & Container Backgrounds ===== */
-  --card-bg: #0f0f0f;
-  --card-hover-bg: #1a1a1a;
-  --input-bg: #1a1a1a;
-  --modal-bg: #0f0f0f;
+  --card-bg: #0f172a;
+  --card-hover-bg: #1e293b;
+  --input-bg: #1e293b;
+  --modal-bg: #0f172a;
 
   /* ===== Text Colors ===== */
   --text-primary: #f8fafc;
@@ -119,128 +109,127 @@ body {
   --text-inverse: #0f172a;
 
   /* ===== Borders ===== */
-  --border-default: #2a2a2a;
-  --border-light: #1a1a1a;
-  --border-strong: #3a3a3a;
+  --border-default: #1e293b;
+  --border-light: #0f172a;
+  --border-strong: #334155;
   --border-focus: #6366f1;
 
   /* ===== Interactive Elements ===== */
-  --button-primary-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --button-secondary-bg: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-  --button-accent-bg: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --button-primary-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --button-secondary-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --button-accent-bg: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   --button-hover-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
   --link-color: #60a5fa;
   --link-hover: #93c5fd;
 
   /* ===== Glassmorphism (Enhanced for Dark) ===== */
-  --glass-bg: rgba(15, 15, 15, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-card-bg: rgba(20, 20, 20, 0.8);
-  --glass-card-border: rgba(255, 255, 255, 0.15);
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-card-bg: rgba(30, 41, 59, 0.7);
+  --glass-card-border: rgba(255, 255, 255, 0.1);
   --glass-backdrop-blur: 16px;
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 
   /* ===== Navigation ===== */
-  --nav-bg: #000000;
-  --nav-border: #1a1a1a;
-  --nav-hover-bg: #111111;
-  --nav-active-bg: #1a1a1a;
+  --nav-bg: rgba(11, 15, 25, 0.85);
+  --nav-border: #1e293b;
+  --nav-hover-bg: #1e293b;
+  --nav-active-bg: #334155;
 
   /* ===== Specific Sections ===== */
-  --contact-bg: linear-gradient(135deg, #0a0a0a 0%, #000000 100%);
-  --footer-bg: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
-  --hero-overlay: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+  --contact-bg: #07070f;
+  --footer-bg: linear-gradient(180deg, #07070f 0%, #05050d 100%);
+  --hero-overlay: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
 
   /* ===== Shadows ===== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.5);
   --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.4);
-  --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.6);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.35);
+  --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.55);
 
   /* ===== Accent Colors ===== */
   --accent-primary: #6366f1;
   --accent-secondary: #a855f7;
-  --accent-success: #34d399;
-  --accent-warning: #fbbf24;
-  --accent-error: #f87171;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
 }
 
-/* ===== BUTTERY-SMOOTH GLOBAL TRANSITIONS ===== */
+/* ===== BUTTERY-SMOOTH GLOBAL THEME TRANSITIONS ===== */
 html,
 body {
   background-color: var(--page-bg);
   color: var(--text-primary);
-  /* Apply Inter as default font family */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  /* transition-colors with 300ms for smooth fade effect */
-  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 300ms ease, color 300ms ease;
+  min-height: 100%;
 }
 
-* {
-  /* All elements fade smoothly when theme switches */
-  transition: background-color 300ms ease-in-out,
-    color 300ms ease-in-out,
-    border-color 300ms ease-in-out,
-    box-shadow 200ms ease,
-    opacity 200ms ease,
-    transform 200ms ease;
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Smooth color transitions for interactive elements without layout repaints */
+a, button, input, select, textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
 
 /* Disable transitions for reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* Scrollbar Styling */
+/* Elegant Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--text-tertiary);
-  border-radius: 4px;
+  background: var(--border-strong);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--text-tertiary);
 }
 
-/* Fix for webkit autofill background in dark mode */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active {
+/* Webkit autofill fix */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-text-fill-color: #ffffff !important;
   transition: background-color 5000s ease-in-out 0s;
-  caret-color: white;
+  caret-color: #ffffff;
 }
 
 /* Custom Utilities */
 @utility glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-}
-
-@utility glass-card-dark {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(var(--glass-backdrop-blur));
+  border: 1px solid var(--glass-card-border);
+  box-shadow: var(--glass-shadow);
 }
 
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
-
   &::-webkit-scrollbar {
     display: none;
   }
@@ -250,57 +239,37 @@ input:-webkit-autofill:active {
   scroll-behavior: smooth;
 }
 
-@utility gradient-text {
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
 @utility gradient-text-primary {
-  background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+  background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
 @utility gradient-text-secondary {
-  background-image: linear-gradient(to right, #06b6d4, #3b82f6);
+  background-image: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
-/* Custom Animations */
-@keyframes pulse-slow {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
+/* Micro-animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
 }
 
-@utility animate-pulse-slow {
-  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@utility animate-pulse-subtle {
+  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 }
 
-@utility animate-float {
-  animation: float 3s ease-in-out infinite;
+@utility animate-float-subtle {
+  animation: float-subtle 3s ease-in-out infinite;
 }
 
 /* Custom Theme Extensions */
